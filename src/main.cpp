@@ -1,10 +1,11 @@
 #include <Arduino.h>
 
-#include "can/data.hpp"
-#include "display/display.hpp"
+#include <RH_RF95.h>
 
 
 void setup() {
+    // spi device
+    SPI.begin();
 }
 
 void loop() {
