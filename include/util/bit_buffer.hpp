@@ -6,7 +6,7 @@
 
 #include "option.hpp"
 
-struct BitBufferhandle {
+struct BitBufferHandle {
   size_t size;
   size_t capacity;
 };
@@ -16,12 +16,14 @@ public:
   BitBuffer(size_t bitSize);
   ~BitBuffer();
 
-  template <typename T> void write(BitBufferhandle handle, T value);
-  void write(BitBufferhandle handle, const void *data, size_t size);
+  static BitBuffer empty() { return BitBuffer(0); }
 
-  template <typename T> Option<T> read(BitBufferhandle handle) const;
-  Option<void *> read(BitBufferhandle handle) const;
-  bool read(BitBufferhandle handle, void *data) const;
+  template <typename T> void write(BitBufferHandle handle, T value);
+  void write(BitBufferHandle handle, const void *data, size_t size);
+
+  template <typename T> Option<T> read(BitBufferHandle handle) const;
+  Option<void *> read(BitBufferHandle handle) const;
+  bool read(BitBufferHandle handle, void *data) const;
 
   size_t bitSize() const { return _bitSize; }
   size_t byteSize() const { return (_bitSize + 7) / 8; }

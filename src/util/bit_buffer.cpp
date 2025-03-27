@@ -11,7 +11,7 @@ BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
 
 BitBuffer::~BitBuffer() { delete[] reinterpret_cast<uint8_t *>(_buffer); }
 
-void BitBuffer::write(BitBufferhandle handle, const void *data, size_t size) {
+void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
   if (handle.size + size * 8 > handle.capacity || size == 0)
     return;
 
@@ -36,7 +36,7 @@ void BitBuffer::write(BitBufferhandle handle, const void *data, size_t size) {
   }
 }
 
-bool BitBuffer::read(BitBufferhandle handle, void *data) const {
+bool BitBuffer::read(BitBufferHandle handle, void *data) const {
   if (handle.size + 8 > handle.capacity)
     return false;
 
@@ -55,7 +55,7 @@ bool BitBuffer::read(BitBufferhandle handle, void *data) const {
   return true;
 }
 
-Option<void *> BitBuffer::read(BitBufferhandle handle) const {
+Option<void *> BitBuffer::read(BitBufferHandle handle) const {
   if (handle.size >= handle.capacity)
     return Option<void *>::none();
 
@@ -67,11 +67,11 @@ Option<void *> BitBuffer::read(BitBufferhandle handle) const {
       reinterpret_cast<uint8_t *>(_buffer) + byteOffset));
 }
 
-template <typename T> void BitBuffer::write(BitBufferhandle handle, T value) {
+template <typename T> void BitBuffer::write(BitBufferHandle handle, T value) {
   write(handle, &value, sizeof(T));
 }
 
-template <typename T> Option<T> BitBuffer::read(BitBufferhandle handle) const {
+template <typename T> Option<T> BitBuffer::read(BitBufferHandle handle) const {
   T value;
   if (!read(handle, &value))
     return Option<T>::none();
@@ -79,13 +79,13 @@ template <typename T> Option<T> BitBuffer::read(BitBufferhandle handle) const {
 }
 
 // Explicit instantiation for common types (required due to templates in cpp)
-template Option<uint8_t> BitBuffer::read<uint8_t>(BitBufferhandle handle) const;
+template Option<uint8_t> BitBuffer::read<uint8_t>(BitBufferHandle handle) const;
 template Option<uint16_t>
-BitBuffer::read<uint16_t>(BitBufferhandle handle) const;
+BitBuffer::read<uint16_t>(BitBufferHandle handle) const;
 template Option<uint32_t>
-BitBuffer::read<uint32_t>(BitBufferhandle handle) const;
-template void BitBuffer::write<uint8_t>(BitBufferhandle handle, uint8_t value);
-template void BitBuffer::write<uint16_t>(BitBufferhandle handle,
+BitBuffer::read<uint32_t>(BitBufferHandle handle) const;
+template void BitBuffer::write<uint8_t>(BitBufferHandle handle, uint8_t value);
+template void BitBuffer::write<uint16_t>(BitBufferHandle handle,
                                          uint16_t value);
-template void BitBuffer::write<uint32_t>(BitBufferhandle handle,
+template void BitBuffer::write<uint32_t>(BitBufferHandle handle,
                                          uint32_t value);
