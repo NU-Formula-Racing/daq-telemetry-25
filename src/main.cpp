@@ -2,9 +2,11 @@
 #include <RH_RF95.h>
 
 #include <can/can.hpp>
+#include <can/can_driver_esp.hpp>
 
 void setup() {
-    can::CANBus bus(can::CANBaudRate::CAN_100KBPS, GPIO_NUM_21, GPIO_NUM_22);
+    can::ESPCANDriver<ESPCAN_DEFAULT_TX_PIN, ESPCAN_DEFAULT_RX_PIN> driver;
+    can::CANBus bus(can::CANBaudRate::CAN_100KBPS, driver);
 
     bus.addMessage({.id = 0x123,
                     .length = 8,

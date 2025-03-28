@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "driver/twai.h"
 #include "util/bit_buffer.hpp"
 
 namespace can {
@@ -64,16 +63,41 @@ struct CANMessageDescription {
 class CANBus;
 class CANSignal;
 class CANMessage;
+struct CANMessageRawPayload;
+
+/**========================================================================
+ *                           HAL INTERFACE
+ *========================================================================**/
+
+/// @brief The type of driver to use for the CAN bus.
+enum DriverType {
+    DT_POLLING,
+    DT_INTERRUPT
+};
+
+class CANDriver {
+   public:
+    virtual DriverType getDriverType() = 0;
+    virtual void install(CANBaudRate baudRate) = 0;
+    virtual void uninstall() = 0;
+    virtual void sendMessage(const CANMessage &message, const CANMessageRawPayload &payload) = 0;
+
+    // message handling for interrupt-based drivers
+    virtual void attachInterrupt(std::function<void(const CANMessage &)> callback) = 0;
+
+    // message handling for polling-based drivers
+    virtual bool hasReceivedMessage() = 0;
+    virtual CANMessage receiveMessage() = 0;
+
+    virtual void clearTransmitQueue() = 0;
+    virtual void clearReceiveQueue() = 0;
+};
 
 class CANBus {
    public:
-    /**
-     * @brief Constructs a CANBus instance.
-     * @param baudRate The baud rate to use.
-     * @param txPin The ESP32 TX pin for the TWAI driver.
-     * @param rxPin The ESP32 RX pin for the TWAI driver.
-     */
-    CANBus(CANBaudRate baudRate, gpio_num_t txPin, gpio_num_t rxPin);
+    CANBus(CANDriver &driver, CANBaudRate baudRate)
+        : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()), _bufferMutex(),
+        _signals(), _messages() {}
 
     ~CANBus();
 
@@ -85,10 +109,6 @@ class CANBus {
      */
     CANMessage &addMessage(const CANMessageDescription &description);
 
-    /**
-     * @brief Initializes the CAN bus hardware (TWAI driver), sets the pins, and
-     * registers interrupts.
-     */
     void initialize();
 
     /**
@@ -103,14 +123,7 @@ class CANBus {
      * @param messageID The CAN message ID.
      * @param callback The function to call on receipt.
      */
-    void registerCallback(uint32_t messageID,
-                          std::function<void(const CANMessage &)> callback);
-
-    /**
-     * @brief Processes an interrupt from the TWAI driver.
-     * This should be called from your ISR to handle incoming messages.
-     */
-    void handleInterrupt();
+    void registerCallback(uint32_t messageID, std::function<void(const CANMessage &)> callback);
 
     template <typename T>
     Option<T> getSignalValue(CANSignal &signal) {
@@ -129,9 +142,8 @@ class CANBus {
     bool validateMessages();
 
    private:
+    CANDriver &_driver;
     CANBaudRate _baudRate;
-    gpio_num_t _txPin;
-    gpio_num_t _rxPin;
     size_t _nextBitOffset;
     std::vector<CANMessage> _messages;
     std::vector<CANSignal> _signals;
@@ -143,10 +155,7 @@ class CANBus {
         _callbacks;
 
     BitBufferHandle allocateSignalHandle(uint8_t bitLength);
-
-    twai_general_config_t _genConfig;
-    twai_timing_config_t _timingConfig;
-    twai_filter_config_t _filterConfig;
+    BitBufferHandle allocateMessageHandle(uint8_t bitLength);
 };
 
 class CANSignal {
@@ -193,74 +202,17 @@ class CANMessage {
 
    private:
     // Holds indices into CANBus's internal _signals vector.
-    std::vector<size_t> _signalIndicces;
+    std::vector<size_t> _signalIndicies;
     friend class CANBus;
 };
 
-/**========================================================================
- *                           CONVIENIENCE MACROS
- *========================================================================**/
+struct CANMessageRawPayload {
+    union {
+        uint8_t data[8];
+        uint64_t data64;
+    };
+};
 
-#define CAN_MESSAGE_STANDARD(id, len, ...)                            \
-    (can::CANMessageDescription) {                                    \
-        id, len, can::FrameType::STANDARD, .signals = { __VA_ARGS__ } \
-    }
-
-#define CAN_MESSAGE_EXTENDED(id, len, ...)                            \
-    (can::CANMessageDescription) {                                    \
-        id, len, can::FrameType::EXTENDED, .signals = { __VA_ARGS__ } \
-    }
-
-#define CAN_SIGNAL(...) \
-    (can::CANSignalDescription) { __VA_ARGS__ }
-
-#define CAN_SIGNAL_START_BIT(start) \
-    .start_bit = start
-
-#define CAN_SIGNAL_START_AUTO \
-    .start_bit = 0
-
-#define CAN_SIGNAL_LENGTH(len) \
-    .length = len
-
-#define CAN_SIGNAL_LENGTH_AUTO(type) \
-    .length = sizeof(type) * 8
-
-#define CAN_SIGNAL_SIGNED() \
-    .is_signed = true
-
-#define CAN_SIGNAL_UNSIGNED() \
-    .is_signed = false
-
-#define CAN_SIGNAL_LITTLE_ENDIAN() \
-    .endianness = can::Endianness::MSG_LITTLE_ENDIAN
-
-#define CAN_SIGNAL_BIG_ENDIAN() \
-    .endianness = can::Endianness::MSG_BIG_ENDIAN
-
-#define CAN_SIGNAL_FACTOR(fac) \
-    .factor = fac
-
-#define CAN_SIGNAL_DEFAULT_FACTOR() \
-    .factor = 1.0
-
-#define CAN_SIGNAL_OFFSET(off) \
-    .offset = off
-
-#define CAN_SIGNAL_DEFAULT_OFFSET() \
-    .offset = 0.0
-
-#define CAN_SIGNAL_MINIMUM(min)
-
-#define CAN_SIGNAL_DEFAULT_MINIMUM() \
-    .minimum = 0.0
-
-#define CAN_SIGNAL_MAXIMUM(max) \
-    .maximum = max
-
-#define CAN_SIGNAL_DEFAULT_MAXIMUM() \
-    .maximum = 255.0
-
-};  // namespace can
+}  // namespace can
 
 #endif  // __CAN_H__
