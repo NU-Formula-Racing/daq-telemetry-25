@@ -98,10 +98,9 @@ void CANBus::sendMessage(CANMessage &message) {
     // For simplicity, assume that each signal is stored byte-aligned.
     // We read each signal from the BitBuffer and pack sequentially.
     uint8_t data[8] = {0};  // maximum data length
-    for (size_t i = 0; i < message._signalIndicces.size() && i < message.length;
-         ++i) {
+    for (size_t i = 0; i < message._signalIndicces.size() && i < message.length; i++) {
         CANSignal signal = _signals[message._signalIndicces[i]];
-        Option<uint8_t> optVal = getSignal<uint8_t>(signal);
+        Option<uint8_t> optVal = getSignalValue<uint8_t>(signal);
         if (optVal) {
             data[i] = optVal;
         }
@@ -133,8 +132,7 @@ void CANBus::handleInterrupt() {
                 // (For simplicity, we assume signals are stored in order and are
                 // byte-aligned.)
                 for (size_t i = 0;
-                     i < msg._signalIndicces.size() && i < twaiMsg.data_length_code;
-                     ++i) {
+                     i < msg._signalIndicces.size() && i < twaiMsg.data_length_code; i++) {
                     CANSignal signal = _signals[msg._signalIndicces[i]];
                     // Write the received byte into the BitBuffer using setSignal.
                     setSignalValue<uint8_t>(signal, twaiMsg.data[i]);
@@ -148,4 +146,14 @@ void CANBus::handleInterrupt() {
             }
         }
     }
+}
+
+bool CANBus::validateMessages() {
+    // Ensure that all messages have the correct number of signals.
+    for (auto &msg : _messages) {
+        if (msg.length != msg._signalIndicces.size()) {
+            return false;
+        }
+    }
+    return true;
 }

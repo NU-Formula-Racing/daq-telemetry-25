@@ -65,58 +65,6 @@ class CANBus;
 class CANSignal;
 class CANMessage;
 
-class CANSignal {
-   public:
-    CANMessage &message;
-    BitBufferHandle handle;
-    bool is_signed;
-    Endianness endianness;
-    double factor;
-    double offset;
-    double minimum;
-
-    // A simple constructor to ease creation.
-    CANSignal(CANMessage &msg, BitBufferHandle h, bool sign, Endianness endian,
-              double fac, double off, double minVal)
-        : message(msg), handle(h), is_signed(sign), endianness(endian), factor(fac), offset(off), minimum(minVal) {}
-};
-
-class CANMessage {
-   public:
-    CANBus &bus;
-    uint32_t id;
-    uint8_t length;
-    FrameType type;
-
-    // Methods for setting and reading signals by index.
-    template <typename T>
-    void setSignalValue(size_t index, T value) {
-        return bus.setSignalValue<T>(bus.getSignal(index), value);
-    }
-
-    template <typename T>
-    Option<T> getSignalValue(size_t index) {
-        return bus.getSignalValue<T>(bus.getSignal(index));
-    }
-
-    // Convenience: send this message over the bus.
-    void sendMessage() { bus.sendMessage(*this); }
-
-    // Constructor
-    CANMessage(CANBus &busRef, uint32_t messageId, uint8_t len,
-               FrameType frameType)
-        : bus(busRef), id(messageId), length(len), type(frameType) {}
-
-   private:
-    // Holds indices into CANBus's internal _signals vector.
-    std::vector<size_t> _signalIndicces;
-    friend class CANBus;
-};
-
-/**========================================================================
- *                           CANBUS CLASS
- *========================================================================**/
-
 class CANBus {
    public:
     /**
@@ -180,7 +128,6 @@ class CANBus {
 
     bool validateMessages();
 
-
    private:
     CANBaudRate _baudRate;
     gpio_num_t _txPin;
@@ -202,21 +149,70 @@ class CANBus {
     twai_filter_config_t _filterConfig;
 };
 
-};  // namespace can
+class CANSignal {
+   public:
+    CANMessage &message;
+    BitBufferHandle handle;
+    bool is_signed;
+    Endianness endianness;
+    double factor;
+    double offset;
+    double minimum;
 
+    // A simple constructor to ease creation.
+    CANSignal(CANMessage &msg, BitBufferHandle h, bool sign, Endianness endian,
+              double fac, double off, double minVal)
+        : message(msg), handle(h), is_signed(sign), endianness(endian), factor(fac), offset(off), minimum(minVal) {}
+};
+
+class CANMessage {
+   public:
+    CANBus &bus;
+    uint32_t id;
+    uint8_t length;
+    FrameType type;
+
+    // Methods for setting and reading signals by index.
+    template <typename T>
+    void setSignalValue(size_t index, T value) {
+        return bus.setSignalValue<T>(bus.getSignal(index), value);
+    }
+
+    template <typename T>
+    Option<T> getSignalValue(size_t index) {
+        return bus.getSignalValue<T>(bus.getSignal(index));
+    }
+
+    // Convenience: send this message over the bus.
+    void sendMessage() { bus.sendMessage(*this); }
+
+    // Constructor
+    CANMessage(CANBus &busRef, uint32_t messageId, uint8_t len,
+               FrameType frameType)
+        : bus(busRef), id(messageId), length(len), type(frameType) {}
+
+   private:
+    // Holds indices into CANBus's internal _signals vector.
+    std::vector<size_t> _signalIndicces;
+    friend class CANBus;
+};
 
 /**========================================================================
  *                           CONVIENIENCE MACROS
  *========================================================================**/
 
-#define CAN_MESSAGE_STANDARD(id, len, ...) \
-    (can::CANMessageDescription){id, len, can::FrameType::STANDARD, .signals = { __VA_ARGS__ }}
+#define CAN_MESSAGE_STANDARD(id, len, ...)                            \
+    (can::CANMessageDescription) {                                    \
+        id, len, can::FrameType::STANDARD, .signals = { __VA_ARGS__ } \
+    }
 
-#define CAN_MESSAGE_EXTENDED(id, len, ...) \
-    (can::CANMessageDescription){id, len, can::FrameType::EXTENDED, .signals = { __VA_ARGS__ }}
+#define CAN_MESSAGE_EXTENDED(id, len, ...)                            \
+    (can::CANMessageDescription) {                                    \
+        id, len, can::FrameType::EXTENDED, .signals = { __VA_ARGS__ } \
+    }
 
 #define CAN_SIGNAL(...) \
-    (can::CANSignalDescription){__VA_ARGS__}
+    (can::CANSignalDescription) { __VA_ARGS__ }
 
 #define CAN_SIGNAL_START_BIT(start) \
     .start_bit = start
@@ -254,7 +250,7 @@ class CANBus {
 #define CAN_SIGNAL_DEFAULT_OFFSET() \
     .offset = 0.0
 
-#define CAN_SIGNAL_MINIMUM(min) \
+#define CAN_SIGNAL_MINIMUM(min)
 
 #define CAN_SIGNAL_DEFAULT_MINIMUM() \
     .minimum = 0.0
@@ -265,5 +261,6 @@ class CANBus {
 #define CAN_SIGNAL_DEFAULT_MAXIMUM() \
     .maximum = 255.0
 
+};  // namespace can
 
 #endif  // __CAN_H__
