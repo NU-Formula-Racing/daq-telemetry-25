@@ -12,25 +12,50 @@ CANBus::~CANBus() {
     _driver.uninstall();
 }
 
-// This helper function allocates space in the BitBuffer for a signal
-// and returns a BitBufferhandle that points to the allocated bit region.
-BitBufferHandle CANBus::allocateSignalHandle(uint8_t bitLength) {
-    BitBufferHandle handle = {_nextBitOffset, _nextBitOffset + bitLength};
-    _nextBitOffset += bitLength;
-    return handle;
-}
-
-BitBufferHandle CANBus::allocateMessageHandle(uint8_t bitLength) {
-    // we must align the message to the next byte boundary
-    _nextBitOffset = (_nextBitOffset + 7) & ~7;
-    BitBufferHandle handle = {_nextBitOffset, _nextBitOffset + bitLength};
-    _nextBitOffset += bitLength;
-    return handle;
-}
-
 CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
-    CANMessage &msg = _messages.back();
-    // If a callback was provided, register it.
+    // if we have already initialized the bus, we cannot add messages
+    if (_isInitialized) {
+        CAN_DEBUG_PRINT_ERROR("Cannot add messages after initialization.");
+        return _messages.back();
+    }
+
+    // calculate the total number of bits we need to store in our bit buffer
+    // this is where all of the data for the messages will be stored
+    // a few invariants tho:
+    // 1. the bit buffer must be large enough to hold all of the messages
+    // 2. signals within a message will be contiguous in the bit buffer, following the specifications
+    //    of the descriptions provided
+    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure that the
+    //    first signal in a message is aligned to a byte boundary
+    // 4. the bit buffer must be large enough to hold all of the signals in all of the messages
+
+    // increment our bit offset to the next byte boundary
+    _nextBitOffset = (_nextBitOffset + 7) / 8 * 8;
+
+    // create a new message and add it to our list of messages
+    CANMessage msg(*this, description.id, description.length, description.type);
+    _messages.push_back(msg);
+
+    size_t offset = _nextBitOffset;
+
+    // now we need to add the signals to the message
+    for (auto &signal : description.signals) {
+        // create a new can signal and add it to our list of signals
+        BitBufferHandle handle = {
+            .size = signal.length,
+            .offset = offset + signal.startBit,
+        };
+
+        CANSignal canSignal(msg, handle, signal.isSigned, signal.endianness,
+                            signal.factor, signal.offset, signal.minimum);
+
+        size_t currentIndex = _messages.size() - 1;
+        _signals.push_back(canSignal);
+
+        // push back the signal index to the message
+        msg._signalIndicies.push_back(currentIndex);
+    }
+
     if (description.onReceive) {
         registerCallback(description.id, description.onReceive);
     }
@@ -39,7 +64,29 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
 }
 
 void CANBus::initialize() {
+    if (_isInitialized) {
+        CAN_DEBUG_PRINT_ERROR("CANBus is already initialized.");
+        return;
+    }
+
     this->_driver.install(this->_baudRate);
+
+    // calculate the total number of bits we need to store in our bit buffer
+    // this is where all of the data for the messages will be stored
+    // a few invariants tho:
+    // 1. the bit buffer must be large enough to hold all of the messages
+    // 2. signals within a message will be contiguous in the bit buffer, following the specifications
+    //    of the descriptions provided
+    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure that the
+    //    first signal in a message is aligned to a byte boundary
+    // 4. the bit buffer must be large enough to hold all of the signals in all of the messages
+
+    size_t totalBits = 0;
+    for (auto &msg : _messages) {
+        totalBits += msg.length * 8;
+    }
+
+    this->_isInitialized = true;
 }
 
 CANSignal CANBus::getSignal(size_t index) {

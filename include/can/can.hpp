@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "util/bit_buffer.hpp"
+#include "can_debug.hpp"
 
 namespace can {
 
@@ -35,9 +36,9 @@ enum CANBaudRate {
 
 struct CANSignalDescription {
    public:
-    uint8_t start_bit;
+    uint8_t startBit;
     uint8_t length;
-    bool is_signed;
+    bool isSigned;
     Endianness endianness;
     double factor;
     double offset;
@@ -111,7 +112,7 @@ class CANDriver {
 class CANBus {
    public:
     CANBus(CANDriver &driver, CANBaudRate baudRate)
-        : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()), _bufferMutex(), _signals(), _messages() {}
+        : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()) {}
 
     ~CANBus();
 
@@ -163,13 +164,11 @@ class CANBus {
     std::vector<CANSignal> _signals;
     BitBuffer _buffer;
     std::mutex _bufferMutex;
+    bool _isInitialized = false;
 
     // Maps CAN message IDs to their registered callback functions.
     std::unordered_map<uint32_t, std::function<void(const CANMessage &)>>
         _callbacks;
-
-    BitBufferHandle allocateSignalHandle(uint8_t bitLength);
-    BitBufferHandle allocateMessageHandle(uint8_t bitLength);
 
     RawCANMessage encodeMessage(const CANMessage &message) const;
     RawCANMessage decodeMessage(const CANMessage &message, const RawCANMessage &payload) const;

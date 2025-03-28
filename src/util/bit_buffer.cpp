@@ -1,81 +1,75 @@
 #include "util/bit_buffer.hpp"
 
-#include <cstring> // for memcpy
-#include <new>     // for placement new if needed
+#include <cstring>  // for memcpy
+#include <new>      // for placement new if needed
+
+#include "util/util_debug.hpp"
 
 BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
-  size_t byteCount = (_bitSize + 7) / 8;
-  _buffer = new uint8_t[byteCount];
-  std::memset(_buffer, 0, byteCount);
+    size_t byteCount = (_bitSize + 7) / 8;
+    _buffer = new uint8_t[byteCount];
+    std::memset(_buffer, 0, byteCount);
 }
 
 BitBuffer::~BitBuffer() { delete[] reinterpret_cast<uint8_t *>(_buffer); }
 
 void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
-  if (handle.size + size * 8 > handle.capacity || size == 0)
-    return;
+    // write to the buffer at the specified offset
 
-  size_t byteOffset = handle.size / 8;
-  size_t bitOffset = handle.size % 8;
-
-  uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;
-  const uint8_t *src = reinterpret_cast<const uint8_t *>(data);
-
-  for (size_t i = 0; i < size; ++i) {
-    uint8_t byte = src[i];
-    if (bitOffset == 0) {
-      dst[i] = byte;
-    } else {
-      dst[i] &= ~(0xFF << bitOffset);
-      dst[i] |= byte << bitOffset;
-      if (i + 1 < size) {
-        dst[i + 1] &= (0xFF << bitOffset);
-        dst[i + 1] |= byte >> (8 - bitOffset);
-      }
+    // check that we can actually write the full size of the data
+    if (handle.offset + size > _bitSize) {
+        UTIL_DEBUG_PRINT_ERROR("Cannot write to buffer, not enough space.");
+        return;
     }
-  }
+
+    size_t byteOffset = handle.offset / 8;
+    size_t bitOffset = handle.offset % 8;
+
+    const uint8_t *src = reinterpret_cast<const uint8_t *>(data);
+    uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;
 }
 
 bool BitBuffer::read(BitBufferHandle handle, void *data) const {
-  if (handle.size + 8 > handle.capacity)
-    return false;
+    // read from the buffer at the specified offset
 
-  size_t byteOffset = handle.size / 8;
-  size_t bitOffset = handle.size % 8;
+    // check that we can actually read the full size of the data
+    if (handle.offset + handle.size > _bitSize) {
+        UTIL_DEBUG_PRINT_ERROR("Cannot read from buffer, not enough space.");
+        return false;
+    }
 
-  const uint8_t *src = reinterpret_cast<const uint8_t *>(_buffer) + byteOffset;
-  uint8_t *dst = reinterpret_cast<uint8_t *>(data);
+    size_t byteOffset = handle.offset / 8;
+    size_t bitOffset = handle.offset % 8;
 
-  if (bitOffset == 0) {
-    *dst = *src;
-  } else {
-    *dst = (*src >> bitOffset) | (*(src + 1) << (8 - bitOffset));
-  }
+    uint8_t *dst = reinterpret_cast<uint8_t *>(data);
+    const uint8_t *src = reinterpret_cast<const uint8_t *>(_buffer) + byteOffset;
 
-  return true;
+    std::memcpy(dst, src, handle.size / 8);
+    return true;
 }
 
 Option<void *> BitBuffer::read(BitBufferHandle handle) const {
-  if (handle.size >= handle.capacity)
-    return Option<void *>::none();
+    // read from the buffer at the specified offset
+    // check that we can actually read the full size of the data
+    if (handle.offset + handle.size > _bitSize) {
+        UTIL_DEBUG_PRINT_ERROR("Cannot read from buffer, not enough space.");
+        return Option<void *>::none();
+    }
 
-  size_t byteOffset = handle.size / 8;
-  if (byteOffset >= byteSize())
-    return Option<void *>::none();
+    // allocate a buffer to hold the data
+    void *data = new uint8_t[handle.size / 8];
+    if (!data) {
+        UTIL_DEBUG_PRINT_ERROR("Cannot allocate memory for buffer.");
+        return Option<void *>::none();
+    }
 
-  return Option<void *>::some(reinterpret_cast<void *>(
-      reinterpret_cast<uint8_t *>(_buffer) + byteOffset));
-}
+    bool success = read(handle, data);
+    if (!success) {
+        delete[] reinterpret_cast<uint8_t *>(data);
+        return Option<void *>::none();
+    }
 
-template <typename T> void BitBuffer::write(BitBufferHandle handle, T value) {
-  write(handle, &value, sizeof(T));
-}
-
-template <typename T> Option<T> BitBuffer::read(BitBufferHandle handle) const {
-  T value;
-  if (!read(handle, &value))
-    return Option<T>::none();
-  return Option<T>::some(value);
+    return Option<void *>::some(data);
 }
 
 // Explicit instantiation for common types (required due to templates in cpp)
