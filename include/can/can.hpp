@@ -63,7 +63,7 @@ struct CANMessageDescription {
 class CANBus;
 class CANSignal;
 class CANMessage;
-struct CANMessageRawPayload;
+struct RawCANMessage;
 
 /**========================================================================
  *                           HAL INTERFACE
@@ -72,32 +72,46 @@ struct CANMessageRawPayload;
 /// @brief The type of driver to use for the CAN bus.
 enum DriverType {
     DT_POLLING,
-    DT_INTERRUPT
+    DT_INTERRUPT,
+    DT_NONE
+};
+
+struct RawCANMessage {
+    uint32_t id;
+    uint8_t length;
+    union {
+        uint8_t data[8];
+        uint64_t data64;
+    };
 };
 
 class CANDriver {
    public:
-    virtual DriverType getDriverType() = 0;
-    virtual void install(CANBaudRate baudRate) = 0;
-    virtual void uninstall() = 0;
-    virtual void sendMessage(const CANMessage &message, const CANMessageRawPayload &payload) = 0;
+    virtual DriverType getDriverType() {
+        return DT_NONE;
+    }
+
+    virtual void install(CANBaudRate baudRate) { /* no-op */ }
+    virtual void uninstall() { /* no-op */ }
+    virtual void sendMessage(RawCANMessage &message) { /* no-op */ }
 
     // message handling for interrupt-based drivers
-    virtual void attachInterrupt(std::function<void(const CANMessage &)> callback) = 0;
+    virtual void attachInterrupt(std::function<void(const CANMessage &)> callback) {
+        // Default implementation does nothing.
+    }
 
     // message handling for polling-based drivers
-    virtual bool hasReceivedMessage() = 0;
-    virtual CANMessage receiveMessage() = 0;
+    virtual bool hasReceivedMessage() { return false; }
+    virtual RawCANMessage receiveMessage() { return RawCANMessage(); }
 
-    virtual void clearTransmitQueue() = 0;
-    virtual void clearReceiveQueue() = 0;
+    virtual void clearTransmitQueue() { /* no-op */ }
+    virtual void clearReceiveQueue() { /* no-op */ }
 };
 
 class CANBus {
    public:
     CANBus(CANDriver &driver, CANBaudRate baudRate)
-        : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()), _bufferMutex(),
-        _signals(), _messages() {}
+        : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()), _bufferMutex(), _signals(), _messages() {}
 
     ~CANBus();
 
@@ -126,7 +140,7 @@ class CANBus {
     void registerCallback(uint32_t messageID, std::function<void(const CANMessage &)> callback);
 
     template <typename T>
-    Option<T> getSignalValue(CANSignal &signal) {
+    Option<T> getSignalValue(CANSignal &signal) const {
         std::lock_guard<std::mutex> lock(_bufferMutex);
         return _buffer.read<T>(signal.handle);
     }
@@ -137,7 +151,7 @@ class CANBus {
         _buffer.write(signal.handle, value);
     }
 
-    CANSignal &getSignal(size_t index) { return _signals[index]; }
+    CANSignal getSignal(size_t index);
 
     bool validateMessages();
 
@@ -156,6 +170,9 @@ class CANBus {
 
     BitBufferHandle allocateSignalHandle(uint8_t bitLength);
     BitBufferHandle allocateMessageHandle(uint8_t bitLength);
+
+    RawCANMessage encodeMessage(const CANMessage &message) const;
+    RawCANMessage decodeMessage(const CANMessage &message, const RawCANMessage &payload) const;
 };
 
 class CANSignal {
@@ -204,13 +221,6 @@ class CANMessage {
     // Holds indices into CANBus's internal _signals vector.
     std::vector<size_t> _signalIndicies;
     friend class CANBus;
-};
-
-struct CANMessageRawPayload {
-    union {
-        uint8_t data[8];
-        uint64_t data64;
-    };
 };
 
 }  // namespace can

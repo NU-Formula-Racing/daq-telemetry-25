@@ -15,12 +15,11 @@ namespace can {
 template <gpio_num_t txPin, gpio_num_t rxPin>
 class ESPCANDriver : public CANDriver {
    public:
-   
-    DriverType getDriverType() override {
+    DriverType getDriverType() {
         return DT_INTERRUPT;
     }
 
-    void install(CANBaudRate baudRate) override {
+    void install(CANBaudRate baudRate) {
         _baudRate = baudRate;
         _genConfig = TWAI_GENERAL_CONFIG_DEFAULT(txPin, rxPin, TWAI_MODE_NORMAL);
         switch (_baudRate) {
@@ -53,8 +52,39 @@ class ESPCANDriver : public CANDriver {
         twai_start();
     }
 
-    void uninstall() override {
+    void uninstall() {
         twai_stop();
+        twai_driver_uninstall();
+    }
+
+    void sendMessage(const RawCANMessage &message) {
+        twai_message_t twaiMessage;
+        twaiMessage.identifier = message.id;
+        twaiMessage.data_length_code = message.length;
+        memcpy(twaiMessage.data, message.data, sizeof(message.data));
+        twai_transmit(&twaiMessage, portMAX_DELAY);
+    }
+
+    void receiveMessage(RawCANMessage &message) {
+        twai_message_t twaiMessage;
+        if (twai_receive(&twaiMessage, portMAX_DELAY) == ESP_OK) {
+            message.id = twaiMessage.identifier;
+            message.length = twaiMessage.data_length_code;
+            memcpy(message.data, twaiMessage.data, sizeof(message.data));
+        }
+    }
+
+    void attachInterrupt(std::function<void(const RawCANMessage &)> callback) {
+        // Register the callback function for TWAI interrupts.
+        // twai_register_isr(callback, NULL);
+    }
+
+    void clearTransmitQueue() {
+        twai_clear_transmit_queue();
+    }
+
+    void clearReceiveQueue() {
+        twai_clear_receive_queue();
     }
 
    private:

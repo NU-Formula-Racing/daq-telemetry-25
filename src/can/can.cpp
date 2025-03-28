@@ -34,17 +34,21 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
     if (description.onReceive) {
         registerCallback(description.id, description.onReceive);
     }
-    
+
     return msg;
 }
 
 void CANBus::initialize() {
+    this->_driver.install(this->_baudRate);
+}
 
-    this->_driver.install();
+CANSignal CANBus::getSignal(size_t index) {
+    return _signals[index];
 }
 
 void CANBus::sendMessage(CANMessage &message) {
-  this->_driver.sendMessage(message);
+    RawCANMessage rawMessage = encodeMessage(message);
+    this->_driver.sendMessage(rawMessage);
 }
 
 // -----------------------------------------------------------------------------
@@ -55,7 +59,6 @@ void CANBus::registerCallback(
     uint32_t messageID, std::function<void(const CANMessage &)> callback) {
     _callbacks[messageID] = callback;
 }
-
 
 bool CANBus::validateMessages() {
     // Ensure that all messages have the correct number of signals.
