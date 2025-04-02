@@ -23,11 +23,11 @@ enum Endianness { MSG_LITTLE_ENDIAN,
 enum FrameType { STANDARD,
                  EXTENDED };
 enum CANBaudRate {
-    CAN_100KBPS,
-    CAN_125KBPS,
-    CAN_250KBPS,
-    CAN_500KBPS,
-    CAN_1MBPS
+    CBR_100KBPS,
+    CBR_125KBPS,
+    CBR_250KBPS,
+    CBR_500KBPS,
+    CBR_1MBPS
 };
 
 /**========================================================================
@@ -101,9 +101,7 @@ class CANDriver {
         // Default implementation does nothing.
     }
 
-    // message handling for polling-based drivers
-    virtual bool hasReceivedMessage() { return false; }
-    virtual RawCANMessage receiveMessage() { return RawCANMessage(); }
+    bool receiveMessage(RawCANMessage *res) { return false; }
 
     virtual void clearTransmitQueue() { /* no-op */ }
     virtual void clearReceiveQueue() { /* no-op */ }

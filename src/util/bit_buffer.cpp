@@ -59,6 +59,7 @@ bool BitBuffer::read(BitBufferHandle handle, void *data) const {
     size_t byteOffset = handle.offset >> 3;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
+    size_t size = handle.size;
 
     const uint8_t *src = reinterpret_cast<const uint8_t *>(data);
     uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;

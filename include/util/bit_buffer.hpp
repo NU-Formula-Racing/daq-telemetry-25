@@ -29,7 +29,7 @@ class BitBuffer {
     Option<T> read(BitBufferHandle handle) const {
         T value;
         if (read(handle, &value)) {
-            return Option<T>(value);
+            return Option<T>::some(value);
         } else {
             return Option<T>::none();
         }

@@ -6,7 +6,7 @@
 
 void setup() {
     can::ESPCANDriver<ESPCAN_DEFAULT_TX_PIN, ESPCAN_DEFAULT_RX_PIN> driver;
-    can::CANBus bus(driver, can::CANBaudRate::CAN_500KBPS);
+    can::CANBus bus(driver, can::CANBaudRate::CBR_500KBPS);
 
     bus.addMessage({.id = 0x123,
                     .length = 8,

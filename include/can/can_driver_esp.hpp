@@ -5,7 +5,7 @@
 #include <driver/twai.h>
 #include <freertos/FreeRTOS.h>
 
-#include <can/can.hpp>
+#include "can/can.hpp"
 
 #define ESPCAN_DEFAULT_TX_PIN GPIO_NUM_21
 #define ESPCAN_DEFAULT_RX_PIN GPIO_NUM_22
@@ -16,26 +16,26 @@ template <gpio_num_t txPin, gpio_num_t rxPin>
 class ESPCANDriver : public CANDriver {
    public:
     DriverType getDriverType() {
-        return DT_INTERRUPT;
+        return DT_POLLING;
     }
 
     void install(CANBaudRate baudRate) {
         _baudRate = baudRate;
         _genConfig = TWAI_GENERAL_CONFIG_DEFAULT(txPin, rxPin, TWAI_MODE_NORMAL);
         switch (_baudRate) {
-            case CAN_100KBPS:
+            case CBR_100KBPS:
                 _timingConfig = TWAI_TIMING_CONFIG_100KBITS();
                 break;
-            case CAN_125KBPS:
+            case CBR_125KBPS:
                 _timingConfig = TWAI_TIMING_CONFIG_125KBITS();
                 break;
-            case CAN_250KBPS:
+            case CBR_250KBPS:
                 _timingConfig = TWAI_TIMING_CONFIG_250KBITS();
                 break;
-            case CAN_500KBPS:
+            case CBR_500KBPS:
                 _timingConfig = TWAI_TIMING_CONFIG_500KBITS();
                 break;
-            case CAN_1MBPS:
+            case CBR_1MBPS:
                 _timingConfig = TWAI_TIMING_CONFIG_1MBITS();
                 break;
             default:
@@ -65,18 +65,15 @@ class ESPCANDriver : public CANDriver {
         twai_transmit(&twaiMessage, portMAX_DELAY);
     }
 
-    void receiveMessage(RawCANMessage &message) {
+    bool receiveMessage(RawCANMessage *message) {
         twai_message_t twaiMessage;
         if (twai_receive(&twaiMessage, portMAX_DELAY) == ESP_OK) {
-            message.id = twaiMessage.identifier;
-            message.length = twaiMessage.data_length_code;
-            memcpy(message.data, twaiMessage.data, sizeof(message.data));
+            message->id = twaiMessage.identifier;
+            message->length = twaiMessage.data_length_code;
+            memcpy(message->data, twaiMessage.data, sizeof(message->data));
+            return true;
         }
-    }
-
-    void attachInterrupt(std::function<void(const RawCANMessage &)> callback) {
-        // Register the callback function for TWAI interrupts.
-        // twai_register_isr(callback, NULL);
+        return false;
     }
 
     void clearTransmitQueue() {

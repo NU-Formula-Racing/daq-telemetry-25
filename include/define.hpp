@@ -7,7 +7,7 @@
 #define DEBUG  // global debug flag
 #define CAN_DEBUG
 
-enum Pins {
+enum HWPin {
     // CAN Master Pins
     CM_DAQ_OPT = GPIO_NUM_36,
     CM_DRIVETRAIN_OPT = GPIO_NUM_39,
