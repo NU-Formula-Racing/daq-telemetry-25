@@ -42,7 +42,7 @@ class BitBuffer {
     size_t byteSize() const { return (_bitSize + 7) / 8; }
 
    private:
-    void *_buffer;
+    uint8_t *_buffer;
     size_t _bitSize;
 };
 
