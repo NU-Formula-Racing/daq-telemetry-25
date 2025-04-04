@@ -3,18 +3,18 @@
 
 #include <can/can.hpp>
 #include <can/can_driver_esp.hpp>
+#include "resources.hpp"
 
 void setup() {
     can::ESPCANDriver<ESPCAN_DEFAULT_TX_PIN, ESPCAN_DEFAULT_RX_PIN> driver;
     can::CANBus bus(driver, can::CANBaudRate::CBR_500KBPS);
-
+    
     bus.addMessage({.id = 0x123,
                     .length = 8,
                     .type = can::FrameType::STANDARD,
                     .signals = {{.startBit = 0,
                                  .length = 4,
                                  .isSigned = false,
-                                 .endianness = can::Endianness::MSG_LITTLE_ENDIAN,
                                  .factor = 1.0,
                                  .offset = 0.0,
                                  .minimum = 0.0,

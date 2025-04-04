@@ -9,6 +9,8 @@
 struct BitBufferHandle {
     size_t size;
     size_t offset;
+
+    BitBufferHandle (size_t size, size_t offset) : size(size), offset(offset) {}
 };
 
 class BitBuffer {

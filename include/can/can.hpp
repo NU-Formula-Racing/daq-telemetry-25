@@ -194,6 +194,8 @@ class CANMessage {
     uint32_t id;
     uint8_t length;
     FrameType type;
+    const std::vector<size_t> signalIndicies;
+    const BitBufferHandle bufferHandle;
 
     // Methods for setting and reading signals by index.
     template <typename T>
@@ -210,14 +212,10 @@ class CANMessage {
     void sendMessage() { bus.sendMessage(*this); }
 
     // Constructor
-    CANMessage(CANBus &busRef, uint32_t messageId, uint8_t len,
+    CANMessage(CANBus &busRef, uint32_t messageId, size_t bufferStartBit, uint8_t len,
                FrameType frameType)
-        : bus(busRef), id(messageId), length(len), type(frameType) {}
-
-   private:
-    // Holds indices into CANBus's internal _signals vector.
-    std::vector<size_t> _signalIndicies;
-    friend class CANBus;
+        : bus(busRef), id(messageId), length(len), type(frameType), handle(bufferStartBit, len) {}
+        
 };
 
 }  // namespace can

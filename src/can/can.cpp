@@ -33,7 +33,7 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
     _nextBitOffset = (_nextBitOffset + 7) / 8 * 8;
 
     // create a new message and add it to our list of messages
-    CANMessage msg(*this, description.id, description.length, description.type);
+    CANMessage msg(*this, description.id, _nextBitOffset, description.length, description.type);
     _messages.push_back(msg);
 
     size_t offset = _nextBitOffset;
@@ -53,7 +53,7 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
         _signals.push_back(canSignal);
 
         // push back the signal index to the message
-        msg._signalIndicies.push_back(currentIndex);
+        msg.signalIndicies.push_back(currentIndex);
     }
 
     if (description.onReceive) {
@@ -110,9 +110,28 @@ void CANBus::registerCallback(
 bool CANBus::validateMessages() {
     // Ensure that all messages have the correct number of signals.
     for (auto &msg : _messages) {
-        if (msg.length != msg._signalIndicies.size()) {
+        if (msg.length != msg.signalIndicies.size()) {
             return false;
         }
     }
     return true;
+}
+
+RawCANMessage CANBus::encodeMessage(const CANMessage &message) const {
+    RawCANMessage res;
+    res.data64 = 0;
+
+    uint8_t bitIndex = 0;
+    for (auto index : message.signalIndicies) {
+        CANSignal signal = _signals[index];
+        uint64_t sigBuf = _buffer.read(signal.handle);
+        sigBuf = sigBuf * signal.factor + signal.offset;
+        // copy the sigBuf into the data64 at the bit offset
+    }
+
+    return res;
+}
+
+RawCANMessage CANBus::decodeMessage(const CANMessage &message, const RawCANMessage &payload) const {
+
 }
