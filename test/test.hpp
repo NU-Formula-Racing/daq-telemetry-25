@@ -1,13 +1,13 @@
 #ifndef __TEST_H__
 #define __TEST_H__
 
-#include <define.hpp>
-#include "test_debug.hpp"
-
 #include <unity.h>
 
+#include <define.hpp>
 #include <functional>
 #include <map>
+
+#include "test_debug.hpp"
 
 class Tests {
    public:
@@ -16,16 +16,16 @@ class Tests {
         return t;
     }
 
-    void addTest(const char* testName, std::function<void()> testFunc) {
+    void addTest(const char* testName, void (*testFunc)()) {
         _registry[testName] = testFunc;
     }
 
     void runTests() {
         UNITY_BEGIN();
 
-        for (auto &test : _registry){
+        for (auto& test : _registry) {
             TEST_DEBUG_PRINT("**** RUNNING TEST %s ****\n", test.first);
-            // test.second();
+            UnityDefaultTestRun(test.second, test.first, __LINE__);
         }
 
         UNITY_END();
@@ -33,7 +33,7 @@ class Tests {
 
    private:
     Tests() {}
-    std::map<const char*, std::function<void()>> _registry;
+    std::map<const char*, void (*)()> _registry;
 };
 
 #define TEST_FUNC(func)                                        \
@@ -46,6 +46,5 @@ class Tests {
     };                                                         \
     static __##func __inst_##func;                             \
     }
-
 
 #endif  // __TEST_H__
