@@ -1,7 +1,6 @@
 #ifndef __OPTION_H__
 #define __OPTION_H__
 
-#include <optional>
 
 template <typename T> class Option {
 public:

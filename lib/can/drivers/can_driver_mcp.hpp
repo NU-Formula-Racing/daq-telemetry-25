@@ -1,7 +1,7 @@
 #ifndef __CAN_DRIVER_MCP_H__
 #define __CAN_DRIVER_MCP_H__
 
-#include "define.hpp"
+#include <define.hpp>
 
 #ifndef __PLATFORM_NATIVE
 

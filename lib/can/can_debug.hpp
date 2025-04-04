@@ -1,8 +1,8 @@
 #ifndef __CAN_DEBUG_H__
 #define __CAN_DEBUG_H__
 
-#include "define.hpp"
-#include "util/debug.hpp"
+#include <define.hpp>
+#include <debug.hpp>
 
 #define CAN_SYSTEM_STR "CAN"
 #define CAN_COLOR_STR COLOR_CYAN

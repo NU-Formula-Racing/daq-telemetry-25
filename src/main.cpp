@@ -2,7 +2,7 @@
 #include <RH_RF95.h>
 
 #include <can.hpp>
-#include <can/can_driver_esp.hpp>
+#include <can_drivers.hpp>
 #include "resources.hpp"
 
 void setup() {

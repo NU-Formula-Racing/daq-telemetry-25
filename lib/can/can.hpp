@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "util/bit_buffer.hpp"
+#include <bit_buffer.hpp>
 #include "can_debug.hpp"
 
 namespace can {
@@ -194,7 +194,7 @@ class CANMessage {
     uint32_t id;
     uint8_t length;
     FrameType type;
-    const std::vector<size_t> signalIndicies;
+    std::vector<size_t> signalIndicies;
     const BitBufferHandle bufferHandle;
 
     // Methods for setting and reading signals by index.

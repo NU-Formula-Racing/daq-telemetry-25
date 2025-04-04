@@ -1,7 +1,7 @@
 #ifndef __CAN_DRIVER_ESP_H__
 #define __CAN_DRIVER_ESP_H__
 
-#include "define.hpp"
+#include <define.hpp>
 
 #ifdef __PLATFORM_ESP
 
@@ -9,7 +9,7 @@
 #include <driver/twai.h>
 #include <freertos/FreeRTOS.h>
 
-#include "can/can.hpp"
+#include <can.hpp>
 
 #define ESPCAN_DEFAULT_TX_PIN GPIO_NUM_21
 #define ESPCAN_DEFAULT_RX_PIN GPIO_NUM_22
