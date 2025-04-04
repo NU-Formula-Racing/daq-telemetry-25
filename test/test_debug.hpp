@@ -1,7 +1,7 @@
 #ifndef __TEST_DEBUG_H__
 #define __TEST_DEBUG_H__
 
-#include "util/debug.hpp"
+#include <debug.hpp>
 
 #define TEST_DEBUG
 

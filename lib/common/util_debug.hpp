@@ -1,8 +1,7 @@
 #ifndef __UTIL_DEBUG_H__
 #define __UTIL_DEBUG_H__
 
-#include "define.hpp"
-#include "util/debug.hpp"
+#include <debug.hpp>
 
 #define UTIL_SYSTEM_STR "UTIL"
 #define UTIL_COLOR_STR COLOR_YELLOW

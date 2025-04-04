@@ -1,11 +1,14 @@
 #ifndef __CAN_DRIVER_MCP_H__
 #define __CAN_DRIVER_MCP_H__
 
+#include "define.hpp"
+
+#ifndef __PLATFORM_NATIVE
+
 #include <SPI.h>
 #include <mcp2515.h>
 
 #include "can/can.hpp"
-#include "define.hpp"
 
 namespace can {
 
@@ -60,5 +63,7 @@ class MCPCanDriver : public CANDriver {
 };
 
 }  // namespace can
+
+#endif // !__PLATFORM_NATIVE
 
 #endif  // __CAN_DRIVER_MCP_H__

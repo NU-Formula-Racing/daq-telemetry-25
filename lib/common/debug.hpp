@@ -1,7 +1,6 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-#include "define.hpp"
 #include <iostream>
 
 #define COLOR_RETURN "\033[0m"

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "util/option.hpp"
+#include <option.hpp>
 
 struct StringHandle {
   size_t offset; // offset from the beginning of the buffer

@@ -1,9 +1,8 @@
-#include "util/bit_buffer.hpp"
+#include <bit_buffer.hpp>
+#include <util_debug.hpp>
 
 #include <cmath>
 #include <cstring>
-
-#include "util/util_debug.hpp"
 
 BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
     size_t byteCount = (_bitSize + 7) / 8;
