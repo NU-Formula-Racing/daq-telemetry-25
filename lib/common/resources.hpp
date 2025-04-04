@@ -1,7 +1,7 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
-#include <can/can.hpp>
+#include <can.hpp>
 
 class Resources {
    public:

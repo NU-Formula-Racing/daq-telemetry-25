@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <RH_RF95.h>
 
-#include <can/can.hpp>
+#include <can.hpp>
 #include <can/can_driver_esp.hpp>
 #include "resources.hpp"
 
