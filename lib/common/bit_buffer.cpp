@@ -42,6 +42,7 @@ void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
         size_t srcByte = bitIndex >> 3;
         uint8_t mask = 0x1 << (bitIndex % 8);
         dst[dstByte] = (dst[dstByte] & ~mask) | (mask & src[srcByte]);
+        bitIndex++;
     }
 }
 
@@ -77,6 +78,7 @@ bool BitBuffer::read(BitBufferHandle handle, void *data) const {
         size_t srcByte = bitIndex >> 3;
         uint8_t mask = 0x1 << (bitIndex % 8);
         dst[dstByte] = (dst[dstByte] & ~mask) | (mask & src[srcByte]);
+        bitIndex++;
     }
 
     return true;

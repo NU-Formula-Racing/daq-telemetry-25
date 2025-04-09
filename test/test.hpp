@@ -23,8 +23,10 @@ class Tests {
     void runTests() {
         UNITY_BEGIN();
 
+        TEST_DEBUG_PRINT("**** RUNNING %d TESTS ****\n", _registry.size());
+
         for (auto& test : _registry) {
-            TEST_DEBUG_PRINT("**** RUNNING TEST %s ****\n", test.first);
+            // TEST_DEBUG_PRINT("**** RUNNING TEST %s ****\n", test.first);
             UnityDefaultTestRun(test.second, test.first, __LINE__);
         }
 

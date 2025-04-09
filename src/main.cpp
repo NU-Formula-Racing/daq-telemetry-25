@@ -30,7 +30,6 @@ void setup() {
 
                     }});
 
-
     bus.addMessage(
         can::CANMessageDescription{
             .id = 0x456,
