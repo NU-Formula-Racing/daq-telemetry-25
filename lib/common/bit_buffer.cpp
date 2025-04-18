@@ -28,11 +28,10 @@ void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
     uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
-    if (bitOffset) {
-        size_t numWholeBytes = size << 3;
+    if (!bitOffset) {
+        size_t numWholeBytes = size >> 3;
         size_t remainingBits = size % 8;
-
-        memcpy(dst, data, numWholeBytes);
+        memcpy(dst, src, numWholeBytes);
         bitIndex = numWholeBytes * 8;
     }
 
@@ -54,33 +53,33 @@ bool BitBuffer::read(BitBufferHandle handle, void *data) const {
         UTIL_DEBUG_PRINT_ERROR("Cannot read from buffer, not enough space.");
         return false;
     }
-
+    if(handle.size == 0) {
+        return false;
+    }
     size_t byteOffset = handle.offset >> 3;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
     size_t size = handle.size;
 
-    const uint8_t *src = reinterpret_cast<const uint8_t *>(data);
-    uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;
+    uint8_t *dst = reinterpret_cast<uint8_t *>(data);
+    const uint8_t *src = reinterpret_cast<const uint8_t *>(_buffer) + byteOffset;
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
-    if (bitOffset) {
-        size_t numWholeBytes = size << 3;
+    if (!bitOffset) {
+        size_t numWholeBytes = size>>3;
         size_t remainingBits = size % 8;
-
-        memcpy(dst, data, numWholeBytes);
+        memcpy(dst, src, numWholeBytes);
         bitIndex = numWholeBytes * 8;
     }
 
     // now copy the remaining bits, bit by bit
     while (bitIndex < handle.size) {
-        size_t dstByte = byteOffset + (bitIndex >> 3);
-        size_t srcByte = bitIndex >> 3;
+        size_t srcByte = byteOffset + (bitIndex >> 3);
+        size_t dstByte = bitIndex >> 3;
         uint8_t mask = 0x1 << (bitIndex % 8);
         dst[dstByte] = (dst[dstByte] & ~mask) | (mask & src[srcByte]);
         bitIndex++;
     }
-
     return true;
 }
 
@@ -89,6 +88,9 @@ Option<void *> BitBuffer::read(BitBufferHandle handle) const {
     // check that we can actually read the full size of the data
     if (handle.offset + handle.size > _bitSize) {
         UTIL_DEBUG_PRINT_ERROR("Cannot read from buffer, not enough space.");
+        return Option<void *>::none();
+    }
+    if(handle.size == 0) {
         return Option<void *>::none();
     }
 
