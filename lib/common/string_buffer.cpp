@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 
+using namespace common;
 
 StringBuffer::StringBuffer(size_t initialCapacity)
     : _size(0), _capacity(initialCapacity) {

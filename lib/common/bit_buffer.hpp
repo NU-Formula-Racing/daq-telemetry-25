@@ -6,11 +6,13 @@
 
 #include "option.hpp"
 
+namespace common {
+
 struct BitBufferHandle {
     size_t size;
     size_t offset;
 
-    BitBufferHandle (size_t size, size_t offset) : size(size), offset(offset) {}
+    BitBufferHandle(size_t size, size_t offset) : size(size), offset(offset) {}
 };
 
 class BitBuffer {
@@ -47,5 +49,7 @@ class BitBuffer {
     uint8_t *_buffer;
     size_t _bitSize;
 };
+
+}  // namespace common
 
 #endif  // __BIT_BUFFER_H__

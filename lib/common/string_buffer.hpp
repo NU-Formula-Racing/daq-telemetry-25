@@ -6,28 +6,32 @@
 
 #include <option.hpp>
 
+namespace common {
+
 struct StringHandle {
-  size_t offset; // offset from the beginning of the buffer
+    size_t offset;  // offset from the beginning of the buffer
 };
 
 class StringBuffer {
-public:
-  StringBuffer(size_t initialCapacity = 128);
-  ~StringBuffer();
+   public:
+    StringBuffer(size_t initialCapacity = 128);
+    ~StringBuffer();
 
-  Option<StringHandle> append(const char *str);
-  Option<const char *> get(StringHandle handle) const;
+    Option<StringHandle> append(const char *str);
+    Option<const char *> get(StringHandle handle) const;
 
-  size_t size() const { return _size; }
-  size_t capacity() const { return _capacity; }
-  const char *raw() const { return _buffer; }
+    size_t size() const { return _size; }
+    size_t capacity() const { return _capacity; }
+    const char *raw() const { return _buffer; }
 
-private:
-  char *_buffer;
-  size_t _size;
-  size_t _capacity;
+   private:
+    char *_buffer;
+    size_t _size;
+    size_t _capacity;
 
-  bool _ensureCapacity(size_t additional);
+    bool _ensureCapacity(size_t additional);
 };
 
-#endif // __STRING_BUFFER_H__
+}  // namespace common
+
+#endif  // __STRING_BUFFER_H__

@@ -1,5 +1,17 @@
 #ifndef __WIRELESS_H__
 #define __WIRELESS_H__
 
+namespace telem {
 
-#endif // __WIRELESS_H__
+struct WirelessOptions {
+    
+};
+
+class Wireless {
+    public:
+    
+};
+
+};
+
+#endif  // __WIRELESS_H__

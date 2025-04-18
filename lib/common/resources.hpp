@@ -3,6 +3,8 @@
 
 #include <can.hpp>
 
+namespace common {
+
 class Resources {
    public:
     static Resources& instance() {
@@ -15,8 +17,10 @@ class Resources {
     void operator=(Resources const& other) = delete;
 
    public:
-   can::CANBus dataBus;
-   can::CANBus driveBus;
+    can::CANBus dataBus;
+    can::CANBus driveBus;
 };
+
+}  // namespace common
 
 #endif  // __RESOURCES_H__

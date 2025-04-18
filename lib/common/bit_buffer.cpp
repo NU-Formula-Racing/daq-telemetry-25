@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cstring>
 
+using namespace common;
+
 BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
     size_t byteCount = (_bitSize + 7) / 8;
     _buffer = new uint8_t[byteCount];
