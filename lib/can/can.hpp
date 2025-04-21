@@ -12,6 +12,8 @@
 #include <bit_buffer.hpp>
 #include "can_debug.hpp"
 
+using namespace common;
+
 namespace can {
 
 /**========================================================================
@@ -214,7 +216,7 @@ class CANMessage {
     // Constructor
     CANMessage(CANBus &busRef, uint32_t messageId, size_t bufferStartBit, uint8_t len,
                FrameType frameType)
-        : bus(busRef), id(messageId), length(len), type(frameType), handle(bufferStartBit, (size_t)len) {}
+        : bus(busRef), id(messageId), length(len), type(frameType), bufferHandle(bufferStartBit, (size_t)len) {}
         
 };
 

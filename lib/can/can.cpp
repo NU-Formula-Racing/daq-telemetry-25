@@ -1,11 +1,10 @@
 #include <can.hpp>
-
 #include <cstdlib>
 #include <cstring>
 #include <vector>
 
-
 using namespace can;
+using namespace common;
 
 CANBus::~CANBus() {
     _driver.uninstall();
@@ -132,5 +131,4 @@ RawCANMessage CANBus::encodeMessage(const CANMessage &message) const {
 }
 
 RawCANMessage CANBus::decodeMessage(const CANMessage &message, const RawCANMessage &payload) const {
-
 }
