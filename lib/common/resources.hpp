@@ -2,6 +2,7 @@
 #define __RESOURCES_H__
 
 #include <can.hpp>
+#include <tasks.hpp>
 
 namespace common {
 
@@ -12,6 +13,12 @@ class Resources {
         return r;
     }
 
+    static tasks::TaskScheduler &scheduler() {
+
+    }
+
+    static tasks::Tasks
+
    private:
     Resources();
     void operator=(Resources const& other) = delete;
@@ -19,6 +26,7 @@ class Resources {
    public:
     can::CANBus dataBus;
     can::CANBus driveBus;
+    tasks::TaskScheduler scheduler;
 };
 
 }  // namespace common

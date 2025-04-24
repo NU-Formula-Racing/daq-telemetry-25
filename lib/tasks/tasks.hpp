@@ -5,6 +5,9 @@
 
 #include <initializer_list>
 #include <memory>
+#include <vector>
+
+namespace tasks {
 
 enum ESPCore : uint8_t { ESPC_0,
                          ESPC_1 };
@@ -16,7 +19,7 @@ struct TaskOptions {
     ESPCore core;
 };
 
-class Task {
+class TaskAction {
    public:
     virtual const TaskOptions getOptions() const {
         return (TaskOptions){
@@ -31,15 +34,23 @@ class Task {
     virtual void end() {}
 };
 
-template <uint8_t numTasks>
+struct TaskDescription {
+    TaskOptions options;
+    TaskAction action;
+};
+
 class TaskScheduler {
    public:
-    TaskScheduler(std::initializer_list<std::unique_ptr<Task>> tasks) {
+    TaskScheduler() {}
+
+    TaskScheduler(std::initializer_list<std::unique_ptr<TaskDescription>> &tasks) {
         _tasks = tasks;
     }
 
    private:
-    std::array<std::unique_ptr<Task>, numTasks> _tasks;
+    std::vector<std::unique_ptr<TaskDescription>> _tasks;
 };
+
+}  // namespace tasks
 
 #endif  // __TASKS_H__
