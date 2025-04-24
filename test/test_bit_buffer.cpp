@@ -2,6 +2,8 @@
 #include <bit_buffer.hpp>
 #include <cstdlib>
 
+using namespace common;
+
 // Test that initialization correctly reports the bit and byte sizes.
 void test_BBInit() {
     const size_t bitCount = 16;
