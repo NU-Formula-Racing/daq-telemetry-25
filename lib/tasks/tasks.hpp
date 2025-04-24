@@ -24,6 +24,11 @@ class TaskAction {
     virtual bool initialize() {}
     virtual void run() {}
     virtual void end() {}
+
+    template <typename T, typename... Args>
+    static std::unique_ptr<T> make(Args&&... args) {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
 };
 
 struct TaskDescription {
@@ -47,6 +52,13 @@ class TaskScheduler {
 
     void addTask(const TaskOptions& options, std::unique_ptr<TaskAction> task) {
         _tasks.emplace_back(options, std::move(task));
+    }
+
+    void initialize() {
+        for (auto& td : _tasks) {
+            std::cout << "Initializing task: " << td.options.name << "\n";
+            td.action->initialize();
+        }
     }
 
    private:

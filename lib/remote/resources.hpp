@@ -19,12 +19,16 @@ class Resources {
         return r;
     }
 
-    static const tasks::TaskScheduler& sched() {
+    static tasks::TaskScheduler& sched() {
         return Resources::instance().scheduler;
     }
 
-    static const can::CANBus& data() {
+    static can::CANBus& data() {
         return Resources::instance().dataBus;
+    }
+
+    static can::CANBus &drive() {
+        return Resources::instance().driveBus;
     }
 
    private:
