@@ -5,12 +5,10 @@
 #define DEBUG  // global debug flag
 #define CAN_DEBUG
 
-#ifndef __PLATFORM_NATIVE
+// different pins for applciations
+#if defined(APP_REMOTE)
 
 #include <Arduino.h>  // for gpio pins
-
-// different pins for applciations
-#ifdef APP_REMOTE
 
 enum HWPin {
     // CAN Master Pins
@@ -54,6 +52,8 @@ enum HWPin {
 };
 
 #elif defined(APP_BASE)
+
+#include <Arduino.h>  // for gpio pins
 
 // this is a native build, we can't have Arduino stuff
 // this definition shouldn't really be used
@@ -140,5 +140,4 @@ enum HWPin {
 };
 
 #endif
-
-#endif  // __DEFINE_H__
+#endif

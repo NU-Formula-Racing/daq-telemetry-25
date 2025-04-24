@@ -13,7 +13,7 @@ enum ESPCore : uint8_t { ESPC_0,
                          ESPC_1 };
 
 struct TaskOptions {
-    const char *name;
+    const char* name;
     uint32_t intervalTime;
     uint8_t priority;
     ESPCore core;
@@ -21,14 +21,6 @@ struct TaskOptions {
 
 class TaskAction {
    public:
-    virtual const TaskOptions getOptions() const {
-        return (TaskOptions){
-            .name = "Invalid",
-            .intervalTime = 0,
-            .priority = 255,
-            .core = ESPCore::ESPC_0};
-    }
-
     virtual bool initialize() {}
     virtual void run() {}
     virtual void end() {}
@@ -36,19 +28,29 @@ class TaskAction {
 
 struct TaskDescription {
     TaskOptions options;
-    TaskAction action;
+    std::unique_ptr<TaskAction> action;
+
+    TaskDescription(const TaskOptions& opt,
+                    std::unique_ptr<TaskAction>&& act) noexcept
+        : options(opt), action(std::move(act)) {}
+
+    // non-copyable, but movable
+    TaskDescription(const TaskDescription&) = delete;
+    TaskDescription& operator=(const TaskDescription&) = delete;
+    TaskDescription(TaskDescription&&) noexcept = default;
+    TaskDescription& operator=(TaskDescription&&) noexcept = default;
 };
 
 class TaskScheduler {
    public:
     TaskScheduler() {}
 
-    TaskScheduler(std::initializer_list<std::unique_ptr<TaskDescription>> &tasks) {
-        _tasks = tasks;
+    void addTask(const TaskOptions& options, std::unique_ptr<TaskAction> task) {
+        _tasks.emplace_back(options, std::move(task));
     }
 
    private:
-    std::vector<std::unique_ptr<TaskDescription>> _tasks;
+    std::vector<TaskDescription> _tasks;
 };
 
 }  // namespace tasks

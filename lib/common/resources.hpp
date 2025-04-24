@@ -4,6 +4,8 @@
 #include <can.hpp>
 #include <tasks.hpp>
 
+#ifdef APP_REMOTE
+
 namespace common {
 
 class Resources {
@@ -13,11 +15,13 @@ class Resources {
         return r;
     }
 
-    static tasks::TaskScheduler &scheduler() {
-
+    static const tasks::TaskScheduler& sched() {
+        return Resources::instance().scheduler;
     }
 
-    static tasks::Tasks
+    static const can::CANBus &data() {
+        return Resources::instance().dataBus;
+    }
 
    private:
     Resources();
@@ -30,5 +34,7 @@ class Resources {
 };
 
 }  // namespace common
+
+#endif
 
 #endif  // __RESOURCES_H__

@@ -27,5 +27,5 @@ static void __setupCAN() {
 }
 
 static void __setupTasks() {
-    Resources::instance().
+    
 }

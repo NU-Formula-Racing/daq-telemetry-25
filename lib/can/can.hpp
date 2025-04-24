@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 
 #include <bit_buffer.hpp>
 #include "can_debug.hpp"
