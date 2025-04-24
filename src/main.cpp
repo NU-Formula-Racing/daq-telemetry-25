@@ -1,21 +1,20 @@
 #include <Arduino.h>
-#include <RH_RF95.h>
 
-#include <can.hpp>
-#include <can_drivers.hpp>
-#include <tasks.hpp>
+#if defined(APP_REMOTE)
+#include <remote_main.hpp>
+#define APP remote
+#elif defined(APP_BASE)
+#include <base_main.hpp>
+#define APP base
+#else
+#define APP unknown
+#endif
 
-#include "resources.hpp"
-
-// resources initialization steps!
-static void __setupTasks();
 
 void setup() {
-    __setupTasks();
+    APP::setup();
 }
 
 void loop() {
-}
-
-static void __setupTasks() {
+    APP::loop();
 }
