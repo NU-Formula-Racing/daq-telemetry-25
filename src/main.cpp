@@ -8,24 +8,14 @@
 #include "resources.hpp"
 
 // resources initialization steps!
-static void __setupCAN();
 static void __setupTasks();
 
 void setup() {
-    __setupCAN();
     __setupTasks();
 }
 
-void loop() {}
-
-static void __setupCAN() {
-    can::ESPCANDriver<ESPCAN_DEFAULT_TX_PIN, ESPCAN_DEFAULT_RX_PIN> driver;
-    can::CANBus bus(driver, can::CANBaudRate::CBR_500KBPS);
-
-    bus.validateMessages();
-    bus.initialize();
+void loop() {
 }
 
 static void __setupTasks() {
-    
 }

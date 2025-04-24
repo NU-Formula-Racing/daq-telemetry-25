@@ -3,14 +3,13 @@
 
 #include <stdint.h>
 
+#include <bit_buffer.hpp>
 #include <functional>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <mutex>
 
-#include <bit_buffer.hpp>
 #include "can_debug.hpp"
 
 using namespace common;
@@ -91,6 +90,8 @@ struct RawCANMessage {
 
 class CANDriver {
    public:
+    CANDriver() {}
+
     virtual DriverType getDriverType() {
         return DT_NONE;
     }
@@ -116,6 +117,12 @@ class CANBus {
         : _driver(driver), _baudRate(baudRate), _nextBitOffset(0), _buffer(BitBuffer::empty()) {}
 
     ~CANBus();
+
+    // no copies or moves allowed (references can’t be rebound)
+    CANBus(const CANBus &) = delete;
+    CANBus &operator=(const CANBus &) = delete;
+    CANBus(CANBus &&) = delete;
+    CANBus &operator=(CANBus &&) = delete;
 
     /**
      * @brief Adds a message to the CAN bus using the provided description.
@@ -218,7 +225,6 @@ class CANMessage {
     CANMessage(CANBus &busRef, uint32_t messageId, size_t bufferStartBit, uint8_t len,
                FrameType frameType)
         : bus(busRef), id(messageId), length(len), type(frameType), bufferHandle(bufferStartBit, (size_t)len) {}
-        
 };
 
 }  // namespace can

@@ -16,19 +16,18 @@ static CAN_SPEED __speedLUT[] = {
     CAN_125KBPS,
     CAN_250KBPS,
     CAN_500KBPS,
-    CAN_100KBPS
-};
+    CAN_100KBPS};
 
 template <HWPin csPin, uint8_t spiBusNum>
 class MCPCanDriver : public CANDriver {
    public:
+    MCPCanDriver() : _spiBus(spiBusNum), _mcp(csPin, 10000000U, &_spiBus) {}
+
     DriverType getDriverType() {
         return DT_POLLING;
     }
 
     void install(CANBaudRate baudRate) {
-        _spiBus = SPIClass(spiBusNum);
-        _mcp = MCP2515(csPin, MCP2515::DEFAULT_SPI_CLOCK, &_spiBus);
         _mcp.reset();
         _mcp.setBitrate(__speedLUT[baudRate]);
         _mcp.setNormalMode();
@@ -57,8 +56,8 @@ class MCPCanDriver : public CANDriver {
     }
 
    private:
-    MCP2515 _mcp;
     SPIClass _spiBus;
+    MCP2515 _mcp;
 };
 
 }  // namespace can

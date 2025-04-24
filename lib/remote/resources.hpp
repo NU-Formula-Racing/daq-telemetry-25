@@ -1,12 +1,16 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
+#include <SPI.h>
+
 #include <can.hpp>
+#include <can_drivers.hpp>
+#include <define.hpp>
 #include <tasks.hpp>
 
 #ifdef APP_REMOTE
 
-namespace common {
+namespace remote {
 
 class Resources {
    public:
@@ -19,7 +23,7 @@ class Resources {
         return Resources::instance().scheduler;
     }
 
-    static const can::CANBus &data() {
+    static const can::CANBus& data() {
         return Resources::instance().dataBus;
     }
 
@@ -27,13 +31,22 @@ class Resources {
     Resources();
     void operator=(Resources const& other) = delete;
 
-   public:
-    can::CANBus dataBus;
+    can::ESPCANDriver<
+        ESPCAN_DEFAULT_TX_PIN,
+        ESPCAN_DEFAULT_RX_PIN>
+        _driveDriver;
+
+   can::MCPCanDriver<
+       HWPin::CAN_DATA_MCP_CS,
+       VSPI>
+       _dataDriver;
+
+       public : can::CANBus dataBus;
     can::CANBus driveBus;
     tasks::TaskScheduler scheduler;
 };
 
-}  // namespace common
+}  // namespace remote
 
 #endif
 
