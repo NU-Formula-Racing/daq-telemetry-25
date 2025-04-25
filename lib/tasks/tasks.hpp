@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "tasks_debug.hpp"
+
 namespace tasks {
 
 enum ESPCore : BaseType_t {
@@ -90,27 +92,32 @@ class TaskScheduler {
     TaskScheduler() {}
 
     void addTask(const TaskOptions& options, std::unique_ptr<TaskAction> task) {
-        std::cout << "Adding task: " << options.name << "\n";
+        if (!_hasStarted) {
+            TASKS_DEBUG_PRINT_ERRORLN("Cannot add tasks once the scheduler has started!");
+            return;
+        }
+
+        TASKS_DEBUG_PRINT("Adding task: %s\n", options.name);
         _tasks.emplace_back(options, std::move(task));
     }
 
     void start() {
+        if (_hasStarted) {
+            TASKS_DEBUG_PRINT_ERRORLN("Cannot start scheduler again!");
+            return;
+        }
+
+        _hasStarted = true;
+
         // prevent vector from moving elements once we've got pointers into it
         _tasks.reserve(_tasks.size());
 
         for (auto& td : _tasks) {
-            // pass &td (pointer to the element in the vector)
-            std::cout << &td << "\n";
-
             xTaskCreatePinnedToCore(
                 // entry function
                 [](void* param) {
-                    std::cout << "Beginning task!\n";
-
-                    std::cout << param << "\n";
-
                     auto* desc = static_cast<TaskDescription*>(param);
-
+                    TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
                     // one‐shot init
                     if (!desc->action->initialize()) {
                         // initialization failed — delete this task if needed
@@ -137,8 +144,39 @@ class TaskScheduler {
         }
     }
 
+    /// Block the calling task for `ms` milliseconds.
+    static void delayMs(uint32_t ms) {
+        vTaskDelay(pdMS_TO_TICKS(ms));
+    }
+
+    /// Block the calling task for `ticks` FreeRTOS ticks.
+    static void delayTicks(TickType_t ticks) {
+        vTaskDelay(ticks);
+    }
+
+    /// Yield to another ready task of equal priority.
+    static void yield() {
+        taskYIELD();
+    }
+
+    /// Return the current tick count.
+    static TickType_t getTickCount() {
+        return xTaskGetTickCount();
+    }
+
+    /// Globally disable interrupts (careful—no nesting tracking!).
+    static void disableInterrupts() {
+        portDISABLE_INTERRUPTS();
+    }
+
+    /// Globally enable interrupts.
+    static void enableInterrupts() {
+        portENABLE_INTERRUPTS();
+    }
+
    private:
     std::vector<TaskDescription> _tasks;
+    bool _hasStarted = false;
 };
 
 }  // namespace tasks
