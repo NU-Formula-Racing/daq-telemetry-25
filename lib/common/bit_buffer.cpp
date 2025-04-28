@@ -7,7 +7,7 @@
 using namespace common;
 
 BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
-    size_t byteCount = (_bitSize + 7) / 8;
+    size_t byteCount = (_bitSize + 7) >> 3;
     _buffer = new uint8_t[byteCount];
     std::memset(_buffer, 0, byteCount);
 }
@@ -31,8 +31,8 @@ void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
     if (!bitOffset) {
-        size_t numWholeBytes = size >> 3;
-        size_t remainingBits = size % 8;
+        size_t numWholeBytes = handle.size >> 3;
+        size_t remainingBits = handle.size % 8;
         memcpy(dst, src, numWholeBytes);
         bitIndex = numWholeBytes * 8;
     }
