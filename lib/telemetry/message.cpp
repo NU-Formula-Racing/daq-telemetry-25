@@ -1,6 +1,4 @@
-// is copilot working? autocomplete this if it is. guess it's not.
-
-#include "message.hpp"
+#include <message.hpp>
 
 LoRaPacket::LoRaPacket(uint8_t msg_type,
                        uint8_t options,

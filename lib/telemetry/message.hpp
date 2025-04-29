@@ -68,4 +68,5 @@ class LoRaPacket {
     static void checkPayloadSize(const std::vector<uint8_t>& payload);
 };
 
+
 #endif
