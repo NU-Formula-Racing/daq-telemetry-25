@@ -11,18 +11,21 @@ namespace remote {
 class SensorsTask : public tasks::TaskAction {
     bool initialize() {
         std::cout << "Starting Sensors Task!\n"; 
+        pinMode(HWPin::WS_TASK, OUTPUT);
+        digitalWrite(HWPin::WS_TASK, LOW);
         return true;
     }
 
     void run() {
-        std::cout << "Running Sensors Task!\n"; 
+        digitalWrite(HWPin::WS_TASK, HIGH);
+        std::cout << "Running Sensors Task!\n";
+        Resources::sched().delayMs(10);
+        digitalWrite(HWPin::WS_TASK, LOW); 
     }
 
     void end() {
 
     }
-
-    
 };
 
 } // namespace remote

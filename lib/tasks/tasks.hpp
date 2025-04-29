@@ -62,7 +62,7 @@ struct TaskOptions {
 
 class TaskAction {
    public:
-    virtual bool initialize() {}
+    virtual bool initialize() { return true; }
     virtual void run() {}
     virtual void end() {}
 
@@ -113,22 +113,30 @@ class TaskScheduler {
         _tasks.reserve(_tasks.size());
 
         for (auto& td : _tasks) {
+            TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
+            // one‐shot init
+            if (!td.action->initialize()) {
+                TASKS_DEBUG_PRINT_ERROR("Starting task %s\n", desc->options.name);
+                continue;
+            }
+
             xTaskCreatePinnedToCore(
                 // entry function
                 [](void* param) {
                     auto* desc = static_cast<TaskDescription*>(param);
                     TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
-                    // one‐shot init
-                    if (!desc->action->initialize()) {
-                        // initialization failed — delete this task if needed
-                        vTaskDelete(nullptr);
-                        return;
-                    }
+
                     TickType_t lastWake = xTaskGetTickCount();
                     TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
-                    for (;;) {
-                        desc->action->run();
-                        vTaskDelayUntil(&lastWake, period);
+
+                    // GIVE UP this task’s remaining timeslice, allowing
+                    // any other READY tasks of the same priority to run.
+                    TaskScheduler::yield();
+                    // OPTIONAL: if you still want to enforce a minimum interval
+                    // between successive runs, you can busy-wait with yields:
+                    const TickType_t start = xTaskGetTickCount();
+                    while ((xTaskGetTickCount() - start) < period) {
+                        TaskScheduler::yield();
                     }
 
                     // never actually reached, but for completeness:

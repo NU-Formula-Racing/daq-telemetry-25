@@ -12,15 +12,14 @@ class WirelessTask : public tasks::TaskAction {
     bool initialize() {
         std::cout << "Starting Wireless Task!\n"; 
         pinMode(HWPin::WLS_LORA_CS, OUTPUT);
+        digitalWrite(HWPin::WLS_LORA_CS, HIGH);
         return true;
     }
 
     void run() {
         digitalWrite(HWPin::WLS_LORA_CS, LOW);
         std::cout << "Running Wireless Task!\n";
-
-        tasks::TaskScheduler::delayMs(20);
-
+        Resources::sched().delayMs(10);
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
     }
 
