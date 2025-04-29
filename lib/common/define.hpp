@@ -1,15 +1,12 @@
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
+
 // debug flags
 #define DEBUG  // global debug flag
 #define CAN_DEBUG
-#define TEST
 
-// platform flags
-#define __PLATFORM_NATIVE NATIVE
-#define __PLATFORM_ESP ARDUINO_ARCH_ESP32
-
-#ifndef __PLATFORM_NATIVE
+// different pins for applciations
+#if defined(APP_REMOTE)
 
 #include <Arduino.h>  // for gpio pins
 
@@ -52,6 +49,51 @@ enum HWPin {
     SPI_MOSI = GPIO_NUM_13,
     ESP_RX = GPIO_NUM_3,
     ESP_TX = GPIO_NUM_1,
+};
+
+#elif defined(APP_BASE)
+
+#include <Arduino.h>  // for gpio pins
+
+// this is a native build, we can't have Arduino stuff
+// this definition shouldn't really be used
+enum HWPin {
+    // CAN Master Pins
+    CM_DAQ_OPT,
+    CM_DRIVETRAIN_OPT,
+    CM_WHEEL_OPT,
+    WLS_LORA_CS,
+
+    // Wireless Pins
+    WLS_LORA_RST,
+    WLS_DEBUG_CLK,
+
+    // Logger Pins
+    LOGGER_DEBUG_CLK,
+    LOGGER_SD_CS,
+    LGR_RTC_SDA,
+    LGR_RTC_SCL,
+
+    // Webserver Pins
+    WS_TASK,
+
+    // CAN Pins
+    CAN_DRIVE_RX,
+    CAN_DRIVE_TX,
+    CAN_DATA_MCP_CS,
+    CAN_DATA_MCP_CLK,
+    CAN_DATA_MCP_MISO,
+    CAN_DATA_MCP_MOSI,
+
+    // General Pins
+    SHIFT_REG_DATA,
+
+    // General Pins (don't use directly)
+    SPI_CLK,
+    SPI_MISO,
+    SPI_MOSI,
+    ESP_RX,
+    ESP_TX,
 };
 
 #else
@@ -98,5 +140,4 @@ enum HWPin {
 };
 
 #endif
-
-#endif  // __DEFINE_H__
+#endif

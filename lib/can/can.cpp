@@ -96,6 +96,13 @@ void CANBus::sendMessage(CANMessage &message) {
     this->_driver.sendMessage(rawMessage);
 }
 
+void CANBus::update() {
+    RawCANMessage message;
+    if (!_driver.receiveMessage(&message)) return;
+
+    // do something with the message
+}
+
 // -----------------------------------------------------------------------------
 // Callback Registration and Interrupt Handling
 // -----------------------------------------------------------------------------
