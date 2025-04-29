@@ -134,6 +134,8 @@ class CANBus {
 
     void initialize();
 
+    void update();
+
     /**
      * @brief Sends a CAN message.
      * @param message The CAN message to send.

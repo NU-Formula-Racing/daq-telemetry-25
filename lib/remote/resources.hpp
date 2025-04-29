@@ -27,7 +27,7 @@ class Resources {
         return Resources::instance().dataBus;
     }
 
-    static can::CANBus &drive() {
+    static can::CANBus& drive() {
         return Resources::instance().driveBus;
     }
 
@@ -40,12 +40,13 @@ class Resources {
         ESPCAN_DEFAULT_RX_PIN>
         _driveDriver;
 
-   can::MCPCanDriver<
-       HWPin::CAN_DATA_MCP_CS,
-       VSPI>
-       _dataDriver;
+    can::MCPCanDriver<
+        HWPin::CAN_DATA_MCP_CS,
+        VSPI>
+        _dataDriver;
 
-       public : can::CANBus dataBus;
+   public:
+    can::CANBus dataBus;
     can::CANBus driveBus;
     tasks::TaskScheduler scheduler;
 };
