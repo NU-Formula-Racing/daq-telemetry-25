@@ -5,10 +5,10 @@
 // Test basic initialization of LoRaPacket
 void test_MessageInit() {
     LoRaPacket packet;
-    TEST_ASSERT_EQUAL_UINT8(0, packet.message_type());
-    TEST_ASSERT_FALSE(packet.needs_ack());
-    TEST_ASSERT_FALSE(packet.is_ack());
-    TEST_ASSERT_EQUAL_UINT16(0, packet.sequence_number());
+    TEST_ASSERT_EQUAL_UINT8(0, packet.messageType());
+    TEST_ASSERT_FALSE(packet.needsAck());
+    TEST_ASSERT_FALSE(packet.isAck());
+    TEST_ASSERT_EQUAL_UINT16(0, packet.sequenceNumber());
     TEST_ASSERT_EQUAL_UINT(0, packet.payload().size());
 }
 
@@ -17,10 +17,10 @@ void test_MessageInitWithParams() {
     std::vector<uint8_t> payload = {0x01, 0x02, 0x03};
     LoRaPacket packet(0xAA, LoRaPacket::OPT_NEEDS_ACK, 0x1234, payload);
     
-    TEST_ASSERT_EQUAL_UINT8(0xAA, packet.message_type());
-    TEST_ASSERT_TRUE(packet.needs_ack());
-    TEST_ASSERT_FALSE(packet.is_ack());
-    TEST_ASSERT_EQUAL_UINT16(0x1234, packet.sequence_number());
+    TEST_ASSERT_EQUAL_UINT8(0xAA, packet.messageType());
+    TEST_ASSERT_TRUE(packet.needsAck());
+    TEST_ASSERT_FALSE(packet.isAck());
+    TEST_ASSERT_EQUAL_UINT16(0x1234, packet.sequenceNumber());
     TEST_ASSERT_EQUAL_UINT(3, packet.payload().size());
     TEST_ASSERT_EQUAL_UINT8(0x01, packet.payload()[0]);
     TEST_ASSERT_EQUAL_UINT8(0x02, packet.payload()[1]);
@@ -34,14 +34,14 @@ void test_MessageSerializeDeserialize() {
     
     std::vector<uint8_t> serialized = original.serialize();
     std::cout << "fatos\n";
-    TEST_ASSERT_TRUE(LoRaPacket::validate_packet(serialized));
+    TEST_ASSERT_TRUE(LoRaPacket::validatePacket(serialized));
     
     LoRaPacket deserialized;
     deserialized.deserialize(serialized);
-    TEST_ASSERT_EQUAL_UINT8(original.message_type(), deserialized.message_type());
-    TEST_ASSERT_EQUAL_UINT8(original.needs_ack(), deserialized.needs_ack());
-    TEST_ASSERT_EQUAL_UINT8(original.is_ack(), deserialized.is_ack());
-    TEST_ASSERT_EQUAL_UINT16(original.sequence_number(), deserialized.sequence_number());
+    TEST_ASSERT_EQUAL_UINT8(original.messageType(), deserialized.messageType());
+    TEST_ASSERT_EQUAL_UINT8(original.needsAck(), deserialized.needsAck());
+    TEST_ASSERT_EQUAL_UINT8(original.isAck(), deserialized.isAck());
+    TEST_ASSERT_EQUAL_UINT16(original.sequenceNumber(), deserialized.sequenceNumber());
     TEST_ASSERT_EQUAL_UINT(original.payload().size(), deserialized.payload().size());
     for (size_t i = 0; i < original.payload().size(); i++) {
         TEST_ASSERT_EQUAL_UINT8(original.payload()[i], deserialized.payload()[i]);
@@ -55,45 +55,45 @@ void test_MessagePayloadSize() {
     TEST_ASSERT_EQUAL_UINT(LoRaPacket::MAX_PAYLOAD, packet.payload().size());
     
     // Test setting payload that exceeds maximum size
-    std::vector<uint8_t> too_large_payload(LoRaPacket::MAX_PAYLOAD + 1, 0xAA);
-    bool exception_thrown = false;
+    std::vector<uint8_t> tooLargePayload(LoRaPacket::MAX_PAYLOAD + 1, 0xAA);
+    bool exceptionThrown = false;
     try {
-        packet.set_payload(too_large_payload);
+        packet.setPayload(tooLargePayload);
     } catch (const std::runtime_error&) {
-        exception_thrown = true;
+        exceptionThrown = true;
     }
-    TEST_ASSERT_TRUE(exception_thrown);
+    TEST_ASSERT_TRUE(exceptionThrown);
 }
 
 // Test invalid packet validation
 void test_MessageInvalidPacket() {
-    std::vector<uint8_t> invalid_packet = {0x01, 0x02, 0x03}; // Too short
-    TEST_ASSERT_FALSE(LoRaPacket::validate_packet(invalid_packet));
+    std::vector<uint8_t> invalidPacket = {0x01, 0x02, 0x03}; // Too short
+    TEST_ASSERT_FALSE(LoRaPacket::validatePacket(invalidPacket));
     
     // Test with wrong end byte
-    std::vector<uint8_t> wrong_end = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00};
-    TEST_ASSERT_FALSE(LoRaPacket::validate_packet(wrong_end));
+    std::vector<uint8_t> wrongEnd = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00};
+    TEST_ASSERT_FALSE(LoRaPacket::validatePacket(wrongEnd));
     
     // Test with wrong CRC
-    std::vector<uint8_t> wrong_crc = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x00, 0x00, 0xA1};
-    TEST_ASSERT_FALSE(LoRaPacket::validate_packet(wrong_crc));
+    std::vector<uint8_t> wrongCrc = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x00, 0x00, 0xA1};
+    TEST_ASSERT_FALSE(LoRaPacket::validatePacket(wrongCrc));
 }
 
 // Test setters
 void test_MessageSetters() {
     LoRaPacket packet;
     
-    packet.set_message_type(0xBB);
-    TEST_ASSERT_EQUAL_UINT8(0xBB, packet.message_type());
+    packet.setMessageType(0xBB);
+    TEST_ASSERT_EQUAL_UINT8(0xBB, packet.messageType());
     
-    packet.set_options(LoRaPacket::OPT_IS_ACK);
-    TEST_ASSERT_TRUE(packet.is_ack());
+    packet.setOptions(LoRaPacket::OPT_IS_ACK);
+    TEST_ASSERT_TRUE(packet.isAck());
     
-    packet.set_sequence_number(0x5678);
-    TEST_ASSERT_EQUAL_UINT16(0x5678, packet.sequence_number());
+    packet.setSequenceNumber(0x5678);
+    TEST_ASSERT_EQUAL_UINT16(0x5678, packet.sequenceNumber());
     
-    std::vector<uint8_t> new_payload = {0x04, 0x05, 0x06};
-    packet.set_payload(new_payload);
+    std::vector<uint8_t> newPayload = {0x04, 0x05, 0x06};
+    packet.setPayload(newPayload);
     TEST_ASSERT_EQUAL_UINT(3, packet.payload().size());
     TEST_ASSERT_EQUAL_UINT8(0x04, packet.payload()[0]);
     TEST_ASSERT_EQUAL_UINT8(0x05, packet.payload()[1]);

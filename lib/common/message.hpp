@@ -2,60 +2,70 @@
 #define LORA_PACKET_HPP
 
 #include <cstdint>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 union OptionsByte {
     uint8_t raw;
     struct {
-        uint8_t needs_ack:1;
-        uint8_t is_ack:1;
-        uint8_t reserved:6;
+        uint8_t needsAck : 1;
+        uint8_t isAck : 1;
+        uint8_t reserved : 6;
     };
 };
 
 class LoRaPacket {
-public:
-    static constexpr uint8_t END_BYTE    = 0xA1; // Magic byte to check if the packet is indeed ours, in the end
-    static constexpr size_t  MAX_PAYLOAD = 248; // Hard limit, if we changed the MAX_PAYLOAD
+   public:
+    static constexpr uint8_t END_BYTE = 0xA1;   // Magic byte to check if the packet is indeed ours, in the end
+    static constexpr size_t MAX_PAYLOAD = 248;  // Hard limit, if we changed the MAX_PAYLOAD
     // we would have packets bigger than 255 (LoRa max) due to the headers
 
-    enum  : uint8_t {
+    enum : uint8_t {
         OPT_NEEDS_ACK = 1 << 0,
-        OPT_IS_ACK    = 1 << 1
+        OPT_IS_ACK = 1 << 1
     };
 
-
     LoRaPacket();
-    LoRaPacket(uint8_t msg_type,
-               uint8_t options,
-               uint16_t seq_num,
-               std::vector<uint8_t> payload);
+    LoRaPacket(uint8_t msgType, uint8_t options, uint16_t seqNum, std::vector<uint8_t> payload);
+    
+    /**------------------------------------------------------------------------
+     *                           PACKET SERIALIZATIOn
+     *------------------------------------------------------------------------**/
 
+    static bool validatePacket(const std::vector<uint8_t>& raw);
     void deserialize(const std::vector<uint8_t>& raw);
     std::vector<uint8_t> serialize();
-    uint8_t message_type() const noexcept { return msg_type_; }
-    bool needs_ack() const noexcept { return options_.needs_ack == 1;}
-    bool is_ack() const noexcept { return options_.is_ack == 1; }
-    uint16_t sequence_number() const noexcept { return seq_num_; }
-    const std::vector<uint8_t>& payload() const noexcept { return payload_; }
-    void change_payload_size(size_t new_val);
-    static bool validate_packet(const std::vector<uint8_t>& raw);
-    void set_payload(const std::vector<uint8_t>& payload);
-    void set_options(uint8_t options) { options_.raw = options; }
-    void set_message_type(uint8_t msg_type) { msg_type_ = msg_type; }
-    void set_sequence_number(uint16_t seq_num) { seq_num_ = seq_num; }
 
-private:
-    uint8_t msg_type_;
-    OptionsByte options_;
-    uint16_t seq_num_;
-    size_t payload_size_;
-    std::vector<uint8_t> payload_;
-    std::vector<uint8_t> raw_packet_;
+    /**------------------------------------------------------------------------
+     *                           GETTERS
+     *------------------------------------------------------------------------**/
+    uint8_t messageType() const noexcept { return _msgType; }
+    bool needsAck() const noexcept { return _options.needsAck == 1; }
+    bool isAck() const noexcept { return _options.isAck == 1; }
+    uint16_t sequenceNumber() const noexcept { return _seqNum; }
+    const std::vector<uint8_t>& payload() const noexcept { return _payload; }
 
-    static uint16_t compute_crc(const std::vector<uint8_t>& data);
-    static void check_payload_size(const std::vector<uint8_t>& payload);
+    /**------------------------------------------------------------------------
+     *                           SETTERS
+     *------------------------------------------------------------------------**/
+    void changePayloadSize(size_t newVal);
+    void setPayload(const std::vector<uint8_t>& payload);
+    void setOptions(uint8_t options) { _options.raw = options; }
+    void setMessageType(uint8_t msg_type) { _msgType = msg_type; }
+    void setSequenceNumber(uint16_t seq_num) { _seqNum = seq_num; }
+
+   private:
+    uint8_t _msgType;
+    OptionsByte _options;
+    uint16_t _seqNum;
+    size_t _payloadSize;
+
+    // TODO: investigate better methods of storing packet data to be more friendly for embedded
+    std::vector<uint8_t> _payload;
+    std::vector<uint8_t> _rawPacket;
+
+    static uint16_t computeCRC(const std::vector<uint8_t>& data);
+    static void checkPayloadSize(const std::vector<uint8_t>& payload);
 };
 
-#endif 
+#endif
