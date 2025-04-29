@@ -92,7 +92,7 @@ class TaskScheduler {
     TaskScheduler() {}
 
     void addTask(const TaskOptions& options, std::unique_ptr<TaskAction> task) {
-        if (!_hasStarted) {
+        if (_hasStarted) {
             TASKS_DEBUG_PRINT_ERRORLN("Cannot add tasks once the scheduler has started!");
             return;
         }
@@ -113,10 +113,11 @@ class TaskScheduler {
         _tasks.reserve(_tasks.size());
 
         for (auto& td : _tasks) {
-            TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
+
+            TASKS_DEBUG_PRINT("Starting task %s\n", td.options.name);
             // one‐shot init
             if (!td.action->initialize()) {
-                TASKS_DEBUG_PRINT_ERROR("Starting task %s\n", desc->options.name);
+                TASKS_DEBUG_PRINT_ERROR("Failed to start task %s\n", td.options.name);
                 continue;
             }
 
@@ -124,19 +125,23 @@ class TaskScheduler {
                 // entry function
                 [](void* param) {
                     auto* desc = static_cast<TaskDescription*>(param);
-                    TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
+                    while (true) {
+                        TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
 
-                    TickType_t lastWake = xTaskGetTickCount();
-                    TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
+                        TickType_t lastWake = xTaskGetTickCount();
+                        TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
 
-                    // GIVE UP this task’s remaining timeslice, allowing
-                    // any other READY tasks of the same priority to run.
-                    TaskScheduler::yield();
-                    // OPTIONAL: if you still want to enforce a minimum interval
-                    // between successive runs, you can busy-wait with yields:
-                    const TickType_t start = xTaskGetTickCount();
-                    while ((xTaskGetTickCount() - start) < period) {
+                        desc->action->run();
+
+                        // GIVE UP this task’s remaining timeslice, allowing
+                        // any other READY tasks of the same priority to run.
                         TaskScheduler::yield();
+                        // OPTIONAL: if you still want to enforce a minimum interval
+                        // between successive runs, you can busy-wait with yields:
+                        const TickType_t start = xTaskGetTickCount();
+                        while ((xTaskGetTickCount() - start) < period) {
+                            TaskScheduler::yield();
+                        }
                     }
 
                     // never actually reached, but for completeness:
