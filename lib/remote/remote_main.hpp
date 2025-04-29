@@ -41,7 +41,7 @@ void __setupTasks() {
             .intervalTime = 50,
             .complexity = TaskComplexity::TC_HIGH,
             .priority = TaskPriority::TP_NORMAL,
-            .core = ESPCore::ESPC_1
+            .core = ESPCore::ESPC_ANY
         },
         TaskAction::make<CANTask>()
     );
@@ -50,7 +50,7 @@ void __setupTasks() {
         (TaskOptions) {
             .name = "READ_SENSORS",
             .intervalTime = 100,
-            .complexity = TaskComplexity::TC_STANDARD,
+            .complexity = TaskComplexity::TC_HIGH,
             .priority = TaskPriority::TP_LOW,
             .core = ESPCore::ESPC_1
         },
@@ -61,7 +61,7 @@ void __setupTasks() {
         (TaskOptions) {
             .name = "LOG",
             .intervalTime = 100,
-            .complexity = TaskComplexity::TC_STANDARD,
+            .complexity = TaskComplexity::TC_HIGH,
             .priority = TaskPriority::TP_HIGH,
             .core = ESPCore::ESPC_1
         },

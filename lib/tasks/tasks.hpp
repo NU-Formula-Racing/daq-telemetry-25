@@ -113,47 +113,41 @@ class TaskScheduler {
         _tasks.reserve(_tasks.size());
 
         for (auto& td : _tasks) {
-
-            TASKS_DEBUG_PRINT("Starting task %s\n", td.options.name);
-            // one‐shot init
-            if (!td.action->initialize()) {
-                TASKS_DEBUG_PRINT_ERROR("Failed to start task %s\n", td.options.name);
-                continue;
-            }
-
             xTaskCreatePinnedToCore(
-                // entry function
                 [](void* param) {
                     auto* desc = static_cast<TaskDescription*>(param);
-                    while (true) {
-                        TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
 
-                        TickType_t lastWake = xTaskGetTickCount();
-                        TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
-
-                        desc->action->run();
-
-                        // GIVE UP this task’s remaining timeslice, allowing
-                        // any other READY tasks of the same priority to run.
-                        TaskScheduler::yield();
-                        // OPTIONAL: if you still want to enforce a minimum interval
-                        // between successive runs, you can busy-wait with yields:
-                        const TickType_t start = xTaskGetTickCount();
-                        while ((xTaskGetTickCount() - start) < period) {
-                            TaskScheduler::yield();
-                        }
+                    // One-shot init
+                    TASKS_DEBUG_PRINT("Starting task %s\n", desc->options.name);
+                    if (!desc->action->initialize()) {
+                        TASKS_DEBUG_PRINT_ERROR("Failed to init %s\n", desc->options.name);
+                        vTaskDelete(nullptr);
+                        return;
                     }
 
-                    // never actually reached, but for completeness:
+                    // Prepare for a periodic loop
+                    TickType_t lastWake = xTaskGetTickCount();
+                    const TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
+
+                    for (;;) {
+                        TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
+                        desc->action->run();
+
+                        // <- This _blocks_ the task until exactly 'period' has elapsed since lastWake
+                        vTaskDelayUntil(&lastWake, period);
+                    }
+
+                    // unreachable
                     desc->action->end();
                     vTaskDelete(nullptr);
                 },
-                td.options.name,        // task name
+                td.options.name,        // name
                 td.options.complexity,  // stack depth
                 &td,                    // pvParameters
                 td.options.priority,    // priority
-                nullptr,                // returned task handle (unused)
-                td.options.core);
+                nullptr,                // handle
+                td.options.core         // core
+            );
         }
     }
 

@@ -9,8 +9,7 @@
 namespace remote {
 
 class WirelessTask : public tasks::TaskAction {
-    bool initialize() {
-        std::cout << "Starting Wireless Task!\n"; 
+    bool initialize() { 
         pinMode(HWPin::WLS_LORA_CS, OUTPUT);
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
         return true;
@@ -18,7 +17,6 @@ class WirelessTask : public tasks::TaskAction {
 
     void run() {
         digitalWrite(HWPin::WLS_LORA_CS, LOW);
-        std::cout << "Running Wireless Task!\n";
         Resources::sched().delayMs(10);
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
     }
