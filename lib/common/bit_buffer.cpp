@@ -14,6 +14,32 @@ BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
 
 BitBuffer::~BitBuffer() { delete _buffer; }
 
+void BitBuffer::writeAtBitOffset(void *destination, const void *source, size_t size, size_t bitOffset) {
+    // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
+    const uint8_t *src = reinterpret_cast<const uint8_t *>(source);
+    uint8_t *dst = reinterpret_cast<uint8_t *>(destination);
+
+    size_t bitIndex = 0;
+    size_t byteOffset = bitOffset >> 3;
+
+
+    if (!bitOffset) {
+        size_t numWholeBytes = size >> 3;
+        size_t remainingBits = size % 8;
+        memcpy(dst, src, numWholeBytes);
+        bitIndex = numWholeBytes * 8;
+    }
+
+    // now copy the remaining bits, bit by bit
+    while (bitIndex < size) {
+        size_t dstByte = byteOffset + (bitIndex >> 3);
+        size_t srcByte = bitIndex >> 3;
+        uint8_t mask = 0x1 << (bitIndex % 8);
+        dst[dstByte] = (dst[dstByte] & ~mask) | (mask & src[srcByte]);
+        bitIndex++;
+    }
+}
+
 void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
     // write to the buffer at the specified offset
     // check that we can actually write the full size of the data
@@ -22,29 +48,10 @@ void BitBuffer::write(BitBufferHandle handle, const void *data, size_t size) {
         return;
     }
 
-    size_t byteOffset = handle.offset >> 3;
-    size_t bitOffset = handle.offset % 8;
-    size_t bitIndex = 0;
-
     const uint8_t *src = reinterpret_cast<const uint8_t *>(data);
-    uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer) + byteOffset;
+    uint8_t *dst = reinterpret_cast<uint8_t *>(_buffer);
 
-    // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
-    if (!bitOffset) {
-        size_t numWholeBytes = handle.size >> 3;
-        size_t remainingBits = handle.size % 8;
-        memcpy(dst, src, numWholeBytes);
-        bitIndex = numWholeBytes * 8;
-    }
-
-    // now copy the remaining bits, bit by bit
-    while (bitIndex < handle.size) {
-        size_t dstByte = byteOffset + (bitIndex >> 3);
-        size_t srcByte = bitIndex >> 3;
-        uint8_t mask = 0x1 << (bitIndex % 8);
-        dst[dstByte] = (dst[dstByte] & ~mask) | (mask & src[srcByte]);
-        bitIndex++;
-    }
+    BitBuffer::writeAtBitOffset(dst, src, handle.size, handle.offset);
 }
 
 bool BitBuffer::read(BitBufferHandle handle, void *data) const {

@@ -22,6 +22,8 @@ class BitBuffer {
 
     static BitBuffer empty() { return BitBuffer(0); }
 
+    static void writeAtBitOffset(void *dest, const void *src, size_t size, size_t bitOffset);
+
     template <typename T>
     void write(BitBufferHandle handle, T value) {
         write(handle, &value, sizeof(T));

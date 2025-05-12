@@ -25,6 +25,23 @@ void setup() {
 
     REMOTE_DEBUG_PRINTLN("DAQ Telemetry Init!");
     __setupTasks();
+    
+    // tie task ws to be the new CM_LED_CLK
+    // REMOTE_DEBUG_PRINTLN("Pin mode CM CLK");
+    // pinMode(HWPin::CM_LED_CLK, OUTPUT);
+    // REMOTE_DEBUG_PRINTLN("Pin mode SR DATA");
+    // pinMode(HWPin::SHIFT_REG_DATA, OUTPUT);
+
+    // REMOTE_DEBUG_PRINTLN("SET SR");
+    // noInterrupts();
+    // for (int i = 0; i < 12; i++) {
+    //     digitalWrite(HWPin::CM_LED_CLK, LOW);
+    //     uint8_t val = (i % 2 == 0) ? LOW : HIGH;
+    //     digitalWrite(HWPin::SHIFT_REG_DATA, val);
+    //     digitalWrite(HWPin::CM_LED_CLK, HIGH);   
+    // }
+    // interrupts();
+    // REMOTE_DEBUG_PRINTLN("FIN SET SR");
 
     Resources::sched().start();
 }
@@ -61,7 +78,7 @@ void __setupTasks() {
         (TaskOptions) {
             .name = "LOG",
             .intervalTime = 100,
-            .complexity = TaskComplexity::TC_HIGH,
+            .complexity = TaskComplexity::TC_VERY_HIGH,
             .priority = TaskPriority::TP_HIGH,
             .core = ESPCore::ESPC_1
         },

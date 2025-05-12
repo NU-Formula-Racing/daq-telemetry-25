@@ -16,8 +16,8 @@ union OptionsByte {
 
 class LoRaPacket {
    public:
-    static constexpr uint8_t END_BYTE = 0xA1;   // Magic byte to check if the packet is indeed ours, in the end
-    static constexpr size_t MAX_PAYLOAD = 248;  // Hard limit, if we changed the MAX_PAYLOAD
+    static const uint8_t END_BYTE = 0xA1;   // Magic byte to check if the packet is indeed ours, in the end
+    static const size_t MAX_PAYLOAD = 248;  // Hard limit, if we changed the MAX_PAYLOAD
     // we would have packets bigger than 255 (LoRa max) due to the headers
 
     enum : uint8_t {

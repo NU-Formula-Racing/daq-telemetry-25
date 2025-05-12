@@ -138,4 +138,5 @@ RawCANMessage CANBus::encodeMessage(const CANMessage &message) const {
 }
 
 RawCANMessage CANBus::decodeMessage(const CANMessage &message, const RawCANMessage &payload) const {
+    
 }

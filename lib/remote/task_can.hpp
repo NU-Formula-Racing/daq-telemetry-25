@@ -20,8 +20,10 @@ class CANTask : public tasks::TaskAction {
     }
 
     void run() {
+        digitalWrite(HWPin::CAN_DATA_MCP_CS, LOW);
         Resources::drive().update();
         Resources::data().update();
+        digitalWrite(HWPin::CAN_DATA_MCP_CS, HIGH);
     }
 
     void end() {
