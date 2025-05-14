@@ -1,70 +1,122 @@
 #include <message.hpp>
 
-LoRaPacket::LoRaPacket(uint8_t msg_type,
-                       uint8_t options,
-                       uint16_t seq_num,
-                       std::vector<uint8_t> payload)
-    : _msgType(msg_type),
-      _options{.raw = options},
-      _seqNum(seq_num),
-      _payloadSize(payload.size()),
-      _payload(std::move(payload)) {}
+namespace common {
 
 LoRaPacket::LoRaPacket()
-    : _msgType(0),
-      _options{.raw = 0},
-      _seqNum(0),
-      _payloadSize(0),
-      _payload() {}
+    : _isDirty(false) {
+    _rawPacket.resize(HEADER_SIZE);
+    _rawPacket[_rawPacket.size() - 1] = END_BYTE;
+}
 
-void LoRaPacket::changePayloadSize(size_t new_val) {
-    _payloadSize = new_val;
+LoRaPacket::LoRaPacket(uint8_t msg_type, uint8_t options, uint16_t seq_num, const std::vector<uint8_t>& payload)
+    : _isDirty(false) {
+    auto result = checkPayloadSize(payload.size());
+    if (result.isNone()) {
+        return;
+    }
+    ensurePacketSize(payload.size());
+    
+    // Copy payload
+    std::copy(payload.begin(), payload.end(), _rawPacket.begin());
+    
+    // Set header fields
+    size_t offset = payload.size();
+    _rawPacket[offset] = options;
+    _rawPacket[offset + 1] = msg_type;
+    _rawPacket[offset + 2] = static_cast<uint8_t>(seq_num >> 8);
+    _rawPacket[offset + 3] = static_cast<uint8_t>(seq_num & 0xFF);
+    
+    updateCRC();
+    _rawPacket[_rawPacket.size() - 1] = END_BYTE;
 }
 
 bool LoRaPacket::validatePacket(const std::vector<uint8_t>& raw) {
-    if (raw.size() < 8) return false;
-    size_t raw_size = raw.size() - 1;
-    if (raw[raw_size] != END_BYTE) return false;
+    if (raw.size() < HEADER_SIZE) return false;
+    if (raw[raw.size() - 1] != END_BYTE) return false;
+    
     uint16_t crc = computeCRC(std::vector<uint8_t>(raw.begin(), raw.end() - 3));
-    uint16_t reccievedCRC = (static_cast<uint16_t>(raw[raw.size() - 2]) << 8) | raw[raw.size() - 1];
-    return crc == reccievedCRC;
+    uint16_t received_crc = (static_cast<uint16_t>(raw[raw.size() - 3]) << 8) | raw[raw.size() - 2];
+    return crc == received_crc;
 }
 
-void LoRaPacket::deserialize(const std::vector<uint8_t>& raw) {
+Option<void *> LoRaPacket::deserialize(const std::vector<uint8_t>& raw) {
     if (!validatePacket(raw)) {
-        throw std::runtime_error("Invalid packet");
+        return Option<void *>::none();
     }
-    size_t raw_size = raw.size();
-    _seqNum = (static_cast<uint16_t>(raw[raw_size - 4]) << 8) | raw[raw_size - 3];
-    _msgType = raw[raw_size - 6];
-    _options.raw = raw[raw_size - 7];
-    for (size_t i = 0; i < raw_size - 8; ++i) {
-        _payload.push_back(raw[i]);
-    }
-    _payloadSize = raw_size - 8;
     _rawPacket = raw;
+    _isDirty = false;
+    return Option<void *>::some(nullptr);
 }
 
-std::vector<uint8_t> LoRaPacket::serialize() {
-    std::vector<uint8_t> raw;
-    raw.insert(raw.end(), _payload.begin(), _payload.end());
-    raw.push_back(_options.raw);
-    raw.push_back(_msgType);
-    raw.push_back(static_cast<uint8_t>(_seqNum >> 8));
-    raw.push_back(static_cast<uint8_t>(_seqNum & 0xFF));
-    uint16_t crc = computeCRC(raw);
-    raw.push_back(static_cast<uint8_t>(crc >> 8));
-    raw.push_back(static_cast<uint8_t>(crc & 0xFF));
-    raw.push_back(END_BYTE);
-    _rawPacket = raw;
-    return raw;
+const std::vector<uint8_t>& LoRaPacket::serialize() {
+    if (_isDirty) {
+        updateCRC();
+        _rawPacket[_rawPacket.size() - 1] = END_BYTE;
+        _isDirty = false;
+    }
+    return _rawPacket;
 }
 
-uint16_t LoRaPacket::computeCRC(const std::vector<uint8_t>& raw) {
+uint8_t LoRaPacket::messageType() const noexcept {
+    return _rawPacket[payloadSize() + 1];
+}
+
+bool LoRaPacket::needsAck() const noexcept {
+    OptionsByte opt{.raw = _rawPacket[payloadSize()]};
+    return opt.needsAck == 1;
+}
+
+bool LoRaPacket::isAck() const noexcept {
+    OptionsByte opt{.raw = _rawPacket[payloadSize()]};
+    return opt.isAck == 1;
+}
+
+uint16_t LoRaPacket::sequenceNumber() const noexcept {
+    size_t offset = payloadSize() + 2;
+    return (static_cast<uint16_t>(_rawPacket[offset]) << 8) | _rawPacket[offset + 1];
+}
+
+std::vector<uint8_t> LoRaPacket::payload() const noexcept {
+    return std::vector<uint8_t>(_rawPacket.begin(), _rawPacket.begin() + payloadSize());
+}
+
+size_t LoRaPacket::payloadSize() const noexcept {
+    return _rawPacket.size() - HEADER_SIZE;
+}
+
+Option<void *> LoRaPacket::setPayload(const std::vector<uint8_t>& payload) {
+    auto result = checkPayloadSize(payload.size());
+    if (result.isNone()) {
+        return result;
+    }
+    ensurePacketSize(payload.size());
+    std::copy(payload.begin(), payload.end(), _rawPacket.begin());
+    _isDirty = true;
+    return Option<void *>::some(nullptr);
+}
+
+void LoRaPacket::setOptions(uint8_t options) {
+    _rawPacket[payloadSize()] = options;
+    _isDirty = true;
+}
+
+void LoRaPacket::setMessageType(uint8_t msg_type) {
+    _rawPacket[payloadSize() + 1] = msg_type;
+    _isDirty = true;
+}
+
+void LoRaPacket::setSequenceNumber(uint16_t seq_num) {
+    size_t offset = payloadSize() + 2;
+    _rawPacket[offset] = static_cast<uint8_t>(seq_num >> 8);
+    _rawPacket[offset + 1] = static_cast<uint8_t>(seq_num & 0xFF);
+    _isDirty = true;
+}
+
+uint16_t LoRaPacket::computeCRC(const std::vector<uint8_t>& data) {
     uint16_t crc = 0xFFFF;
-    for (size_t i = 0; i < raw.size(); i++) {
-        crc ^= raw[i];
-        for (size_t j = 0; j < 8; j++) {
+    for (uint8_t byte : data) {
+        crc ^= byte;
+        for (int i = 0; i < 8; i++) {
             if (crc & 0x0001) {
                 crc >>= 1;
                 crc ^= 0xA001;
@@ -76,14 +128,21 @@ uint16_t LoRaPacket::computeCRC(const std::vector<uint8_t>& raw) {
     return crc;
 }
 
-void LoRaPacket::checkPayloadSize(const std::vector<uint8_t>& payload) {
-    if (payload.size() > MAX_PAYLOAD) {
-        throw std::runtime_error("Payload size exceeds maximum limit");
+Option<void *> LoRaPacket::checkPayloadSize(size_t size) {
+    if (size > MAX_PAYLOAD) {
+        return Option<void *>::none();
     }
+    return Option<void *>::some(nullptr);
 }
 
-void LoRaPacket::setPayload(const std::vector<uint8_t>& payload) {
-    checkPayloadSize(payload);
-    _payload.insert(_payload.end(), payload.begin(), payload.end());
-    _payloadSize += payload.size();
+void LoRaPacket::ensurePacketSize(size_t payloadSize) {
+    _rawPacket.resize(payloadSize + HEADER_SIZE);
 }
+
+void LoRaPacket::updateCRC() {
+    uint16_t crc = computeCRC(std::vector<uint8_t>(_rawPacket.begin(), _rawPacket.end() - 3));
+    _rawPacket[_rawPacket.size() - 3] = static_cast<uint8_t>(crc >> 8);
+    _rawPacket[_rawPacket.size() - 2] = static_cast<uint8_t>(crc & 0xFF);
+}
+
+}  // namespace common
