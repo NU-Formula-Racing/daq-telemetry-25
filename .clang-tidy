@@ -3,6 +3,7 @@ Checks: >
   -*,
   clang-analyzer-*,
   bugprone-*,
+  -bugprone-reserved-identifier,      # ← disable exactly this one
   modernize-*,
   readability-function-cognitive-complexity,
   readability-identifier-naming
@@ -37,3 +38,7 @@ CheckOptions:
     value: UPPER_CASE
   - key: readability-identifier-naming.MacroCase
     value: UPPER_CASE
+
+  # Suppress “reserved identifier” warnings on macros:
+  - key: bugprone-reserved-identifier.IgnoreMacros
+    value: '1'

@@ -13,12 +13,19 @@ find . -type f \
 echo "✔ clang-format passed"
 
 # ─── clang-tidy ─────────────────────────────────────────────────────────
-echo "→ clang-tidy (basic)…"
+echo "→ clang-tidy (project-only)…"
 find . -type f \
     ! -path "./.pio/*" ! -path "./scripts/*" \
     \( -iname '*.cpp' -o -iname '*.hpp' \) \
     -print0 \
-  | xargs -0 clang-tidy --warnings-as-errors='*' -- -std=c++17
+| while IFS= read -r -d '' file; do
+    echo "  linting $file"
+    clang-tidy \
+      --warnings-as-errors='*' \
+      --header-filter='^(.\/src|.\/include)\/.*' \
+      --system-headers=false \
+      "$file" -- -std=c++17
+done
 echo "✔ clang-tidy passed"
 
 # ─── Header‐suffix check ─────────────────────────────────────────────────

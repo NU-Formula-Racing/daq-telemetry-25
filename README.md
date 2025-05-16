@@ -55,6 +55,21 @@ Macros : THIS_IS_A_MACRO
 Constants : THIS_IS_A_CONSTANT
 ```
 
+### Scripts
+
+If you have `clang-tidy` and `bash` installed, you can use a few tools:
+
+```bash
+./scripts/format.sh
+```
+
+Which formats the project using `clang-tidy`.
+
+```bash
+./scripts/lint.sh
+```
+
+Which tells you what style mismatches there are in the codebase.
 
 
 ## General Resources

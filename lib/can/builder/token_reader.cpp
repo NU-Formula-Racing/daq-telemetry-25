@@ -15,19 +15,19 @@ bool MockTokenReader::start() {
 
 bool MockTokenReader::peekNextWord(size_t maxLength, char* charBuf, size_t* length) {
     size_t pos = _pos;
-    size_t N = _content.size();
+    size_t n = _content.size();
 
     // skip leading whitespace
-    while (pos < N && std::isspace(static_cast<unsigned char>(_content[pos]))) {
+    while (pos < n && std::isspace(static_cast<unsigned char>(_content[pos]))) {
         ++pos;
     }
-    if (pos >= N) {
+    if (pos >= n) {
         return false;
     }
 
     // mark word boundaries
     size_t start = pos;
-    while (pos < N && !std::isspace(static_cast<unsigned char>(_content[pos]))) {
+    while (pos < n && !std::isspace(static_cast<unsigned char>(_content[pos]))) {
         ++pos;
     }
     size_t wordLen = pos - start;
@@ -44,18 +44,18 @@ bool MockTokenReader::peekNextWord(size_t maxLength, char* charBuf, size_t* leng
 }
 
 bool MockTokenReader::moveWord(size_t stepSize) {
-    size_t N = _content.size();
+    size_t n = _content.size();
     for (size_t i = 0; i < stepSize; ++i) {
         // skip whitespace
-        while (_pos < N && std::isspace(static_cast<unsigned char>(_content[_pos]))) {
+        while (_pos < n && std::isspace(static_cast<unsigned char>(_content[_pos]))) {
             ++_pos;
         }
         // if no more words
-        if (_pos >= N) {
+        if (_pos >= n) {
             return false;
         }
         // skip the word
-        while (_pos < N && !std::isspace(static_cast<unsigned char>(_content[_pos]))) {
+        while (_pos < n && !std::isspace(static_cast<unsigned char>(_content[_pos]))) {
             ++_pos;
         }
     }
