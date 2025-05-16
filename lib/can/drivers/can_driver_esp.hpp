@@ -19,9 +19,7 @@ namespace can {
 template <gpio_num_t txPin, gpio_num_t rxPin>
 class ESPCANDriver : public CANDriver {
    public:
-    DriverType getDriverType() {
-        return DT_POLLING;
-    }
+    DriverType getDriverType() { return DT_POLLING; }
 
     void install(CANBaudRate baudRate) {
         _baudRate = baudRate;
@@ -61,7 +59,7 @@ class ESPCANDriver : public CANDriver {
         twai_driver_uninstall();
     }
 
-    void sendMessage(const RawCANMessage &message) {
+    void sendMessage(const RawCANMessage& message) {
         twai_message_t twaiMessage;
         twaiMessage.identifier = message.id;
         twaiMessage.data_length_code = message.length;
@@ -69,7 +67,7 @@ class ESPCANDriver : public CANDriver {
         twai_transmit(&twaiMessage, portMAX_DELAY);
     }
 
-    bool receiveMessage(RawCANMessage *message) {
+    bool receiveMessage(RawCANMessage* message) {
         twai_message_t twaiMessage;
         if (twai_receive(&twaiMessage, portMAX_DELAY) == ESP_OK) {
             message->id = twaiMessage.identifier;
@@ -80,13 +78,9 @@ class ESPCANDriver : public CANDriver {
         return false;
     }
 
-    void clearTransmitQueue() {
-        twai_clear_transmit_queue();
-    }
+    void clearTransmitQueue() { twai_clear_transmit_queue(); }
 
-    void clearReceiveQueue() {
-        twai_clear_receive_queue();
-    }
+    void clearReceiveQueue() { twai_clear_receive_queue(); }
 
    private:
     twai_general_config_t _genConfig;
@@ -97,6 +91,6 @@ class ESPCANDriver : public CANDriver {
 
 }  // namespace can
 
-#endif // __PLATFORM_ESP
+#endif  // __PLATFORM_ESP
 
 #endif  // __CAN_DRIVER_ESP_H__

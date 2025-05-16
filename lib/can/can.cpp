@@ -10,7 +10,7 @@ CANBus::~CANBus() {
     _driver.uninstall();
 }
 
-CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
+CANMessage& CANBus::addMessage(const CANMessageDescription& description) {
     // if we have already initialized the bus, we cannot add messages
     if (_isInitialized) {
         CAN_DEBUG_PRINT_ERROR("Cannot add messages after initialization.");
@@ -21,9 +21,11 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
     // this is where all of the data for the messages will be stored
     // a few invariants tho:
     // 1. the bit buffer must be large enough to hold all of the messages
-    // 2. signals within a message will be contiguous in the bit buffer, following the specifications
+    // 2. signals within a message will be contiguous in the bit buffer, following the
+    // specifications
     //    of the descriptions provided
-    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure that the
+    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure
+    // that the
     //    first signal in a message is aligned to a byte boundary
     // 4. the bit buffer must be large enough to hold all of the signals in all of the messages
 
@@ -37,15 +39,15 @@ CANMessage &CANBus::addMessage(const CANMessageDescription &description) {
     size_t offset = _nextBitOffset;
 
     // now we need to add the signals to the message
-    for (auto &signal : description.signals) {
+    for (auto& signal : description.signals) {
         // create a new can signal and add it to our list of signals
         BitBufferHandle handle = {
             .size = signal.length,
             .offset = offset + signal.startBit,
         };
 
-        CANSignal canSignal(msg, handle, signal.isSigned, signal.endianness,
-                            signal.factor, signal.offset, signal.minimum);
+        CANSignal canSignal(msg, handle, signal.isSigned, signal.endianness, signal.factor,
+                            signal.offset, signal.minimum);
 
         size_t currentIndex = _messages.size() - 1;
         _signals.push_back(canSignal);
@@ -73,14 +75,16 @@ void CANBus::initialize() {
     // this is where all of the data for the messages will be stored
     // a few invariants tho:
     // 1. the bit buffer must be large enough to hold all of the messages
-    // 2. signals within a message will be contiguous in the bit buffer, following the specifications
+    // 2. signals within a message will be contiguous in the bit buffer, following the
+    // specifications
     //    of the descriptions provided
-    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure that the
+    // 3. the start of a CAN message will be aligned to a byte boundary, so we need to make sure
+    // that the
     //    first signal in a message is aligned to a byte boundary
     // 4. the bit buffer must be large enough to hold all of the signals in all of the messages
 
     size_t totalBits = 0;
-    for (auto &msg : _messages) {
+    for (auto& msg : _messages) {
         totalBits += msg.length * 8;
     }
 
@@ -91,7 +95,7 @@ CANSignal CANBus::getSignal(size_t index) {
     return _signals[index];
 }
 
-void CANBus::sendMessage(CANMessage &message) {
+void CANBus::sendMessage(CANMessage& message) {
     RawCANMessage rawMessage = encodeMessage(message);
     this->_driver.sendMessage(rawMessage);
 }
@@ -107,14 +111,13 @@ void CANBus::update() {
 // Callback Registration and Interrupt Handling
 // -----------------------------------------------------------------------------
 
-void CANBus::registerCallback(
-    uint32_t messageID, std::function<void(const CANMessage &)> callback) {
+void CANBus::registerCallback(uint32_t messageID, std::function<void(const CANMessage&)> callback) {
     _callbacks[messageID] = callback;
 }
 
 bool CANBus::validateMessages() {
     // Ensure that all messages have the correct number of signals.
-    for (auto &msg : _messages) {
+    for (auto& msg : _messages) {
         if (msg.length != msg.signalIndicies.size()) {
             return false;
         }
@@ -122,7 +125,7 @@ bool CANBus::validateMessages() {
     return true;
 }
 
-RawCANMessage CANBus::encodeMessage(const CANMessage &message) const {
+RawCANMessage CANBus::encodeMessage(const CANMessage& message) const {
     RawCANMessage res;
     res.data64 = 0;
 
@@ -137,6 +140,6 @@ RawCANMessage CANBus::encodeMessage(const CANMessage &message) const {
     return res;
 }
 
-RawCANMessage CANBus::decodeMessage(const CANMessage &message, const RawCANMessage &payload) const {
-    
+RawCANMessage CANBus::decodeMessage(const CANMessage& message, const RawCANMessage& payload) const {
+
 }

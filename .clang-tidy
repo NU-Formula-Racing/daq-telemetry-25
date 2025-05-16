@@ -1,3 +1,39 @@
-Checks: '-*,bugprone-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-const-or-ref-data-members,modernize-*,modernize-use-nodiscard,readability-*,modernize-use-trailing-return-type,-readability-magic-numbers,performance-*,-readability-identifier-length,-bugprone-easily-swappable-parameters'
+# .clang-tidy
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-*,
+  readability-function-cognitive-complexity,
+  readability-identifier-naming
 
-% WarningsAsErrors: '*'
+CheckOptions:
+  # Class names: Pascal/CamelCase
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+
+  # Public member variables: lowerCamelCase → camelBack, no prefix
+  - key: readability-identifier-naming.PublicMemberVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.PublicMemberPrefix
+    value: ''
+
+  # Private member variables: lowerCamelCase → camelBack, prefix "_"
+  - key: readability-identifier-naming.PrivateMemberVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: '_'
+
+  # All functions (free, static, member): lowerCamelCase → camelBack
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+
+  # Local variables: lowerCamelCase → camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+
+  # Constants & macros: UPPER_CASE
+  - key: readability-identifier-naming.ConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.MacroCase
+    value: UPPER_CASE

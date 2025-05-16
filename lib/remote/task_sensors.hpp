@@ -18,14 +18,12 @@ class SensorsTask : public tasks::TaskAction {
     void run() {
         digitalWrite(HWPin::WS_TASK, HIGH);
         // Resources::sched().delayMs(10);
-        digitalWrite(HWPin::WS_TASK, LOW); 
+        digitalWrite(HWPin::WS_TASK, LOW);
     }
 
-    void end() {
-
-    }
+    void end() {}
 };
 
-} // namespace remote
+}  // namespace remote
 
-#endif // __TASK_SENSORS_H__
+#endif  // __TASK_SENSORS_H__

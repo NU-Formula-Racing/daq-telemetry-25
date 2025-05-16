@@ -11,21 +11,14 @@
 
 namespace can {
 
-static CAN_SPEED __speedLUT[] = {
-    CAN_100KBPS,
-    CAN_125KBPS,
-    CAN_250KBPS,
-    CAN_500KBPS,
-    CAN_100KBPS};
+static CAN_SPEED __speedLUT[] = {CAN_100KBPS, CAN_125KBPS, CAN_250KBPS, CAN_500KBPS, CAN_100KBPS};
 
 template <HWPin csPin, uint8_t spiBusNum>
 class MCPCanDriver : public CANDriver {
    public:
     MCPCanDriver() : _spiBus(spiBusNum), _mcp(csPin, 10000000U, &_spiBus) {}
 
-    DriverType getDriverType() {
-        return DT_POLLING;
-    }
+    DriverType getDriverType() { return DT_POLLING; }
 
     void install(CANBaudRate baudRate) {
         _mcp.reset();
@@ -37,14 +30,14 @@ class MCPCanDriver : public CANDriver {
         // no-op
     }
 
-    void sendMessage(const RawCANMessage &message) {
+    void sendMessage(const RawCANMessage& message) {
         can_frame frame;
         frame.can_id = message.id;
         memcpy(frame.data, message.data, 8);
         _mcp.sendMessage(&frame);
     }
 
-    bool recieveMessage(RawCANMessage *message) {
+    bool recieveMessage(RawCANMessage* message) {
         can_frame frame;
         if (_mcp.readMessage(&frame) == MCP2515::ERROR_OK) {
             message->id = frame.can_id;

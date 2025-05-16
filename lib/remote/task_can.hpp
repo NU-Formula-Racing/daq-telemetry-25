@@ -26,11 +26,9 @@ class CANTask : public tasks::TaskAction {
         digitalWrite(HWPin::CAN_DATA_MCP_CS, HIGH);
     }
 
-    void end() {
-
-    }
+    void end() {}
 };
 
-} // namespace remote
+}  // namespace remote
 
-#endif // __TASK_CAN_H__
+#endif  // __TASK_CAN_H__

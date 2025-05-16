@@ -3,15 +3,12 @@
 
 namespace telem {
 
-struct WirelessOptions {
-    
-};
+struct WirelessOptions {};
 
 class Wireless {
-    public:
-    
+   public:
 };
 
-};
+};  // namespace telem
 
 #endif  // __WIRELESS_H__

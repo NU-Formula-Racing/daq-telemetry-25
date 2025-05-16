@@ -38,11 +38,11 @@ class LogTask : public tasks::TaskAction {
         digitalWrite(HWPin::LOGGER_SD_CS, LOW);
     }
 
-    void end() {
-    }
+    void end() {}
 
    private:
     RTC_PCF8523 _rtc;
 };
+
 }  // namespace remote
 #endif  // __TASK_LOG_H__

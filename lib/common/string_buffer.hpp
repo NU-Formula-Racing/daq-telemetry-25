@@ -17,15 +17,15 @@ class StringBuffer {
     StringBuffer(size_t initialCapacity = 128);
     ~StringBuffer();
 
-    Option<StringHandle> append(const char *str);
-    Option<const char *> get(StringHandle handle) const;
+    Option<StringHandle> append(const char* str);
+    Option<const char*> get(StringHandle handle) const;
 
     size_t size() const { return _size; }
     size_t capacity() const { return _capacity; }
-    const char *raw() const { return _buffer; }
+    const char* raw() const { return _buffer; }
 
    private:
-    char *_buffer;
+    char* _buffer;
     size_t _size;
     size_t _capacity;
 

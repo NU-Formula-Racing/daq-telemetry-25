@@ -19,31 +19,19 @@ class Resources {
         return r;
     }
 
-    static tasks::TaskScheduler& sched() {
-        return Resources::instance().scheduler;
-    }
+    static tasks::TaskScheduler& sched() { return Resources::instance().scheduler; }
 
-    static can::CANBus& data() {
-        return Resources::instance().dataBus;
-    }
+    static can::CANBus& data() { return Resources::instance().dataBus; }
 
-    static can::CANBus& drive() {
-        return Resources::instance().driveBus;
-    }
+    static can::CANBus& drive() { return Resources::instance().driveBus; }
 
    private:
     Resources();
     void operator=(Resources const& other) = delete;
 
-    can::ESPCANDriver<
-        ESPCAN_DEFAULT_TX_PIN,
-        ESPCAN_DEFAULT_RX_PIN>
-        _driveDriver;
+    can::ESPCANDriver<ESPCAN_DEFAULT_TX_PIN, ESPCAN_DEFAULT_RX_PIN> _driveDriver;
 
-    can::MCPCanDriver<
-        HWPin::CAN_DATA_MCP_CS,
-        VSPI>
-        _dataDriver;
+    can::MCPCanDriver<HWPin::CAN_DATA_MCP_CS, VSPI> _dataDriver;
 
    public:
     can::CANBus dataBus;

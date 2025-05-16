@@ -76,8 +76,7 @@ struct TaskDescription {
     TaskOptions options;
     std::unique_ptr<TaskAction> action;
 
-    TaskDescription(const TaskOptions& opt,
-                    std::unique_ptr<TaskAction>&& act) noexcept
+    TaskDescription(const TaskOptions& opt, std::unique_ptr<TaskAction>&& act) noexcept
         : options(opt), action(std::move(act)) {}
 
     // non-copyable, but movable
@@ -133,7 +132,8 @@ class TaskScheduler {
                         TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
                         desc->action->run();
 
-                        // <- This _blocks_ the task until exactly 'period' has elapsed since lastWake
+                        // <- This _blocks_ the task until exactly 'period' has elapsed since
+                        // lastWake
                         vTaskDelayUntil(&lastWake, period);
                     }
 
@@ -152,34 +152,22 @@ class TaskScheduler {
     }
 
     /// Block the calling task for `ms` milliseconds.
-    static void delayMs(uint32_t ms) {
-        vTaskDelay(pdMS_TO_TICKS(ms));
-    }
+    static void delayMs(uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }
 
     /// Block the calling task for `ticks` FreeRTOS ticks.
-    static void delayTicks(TickType_t ticks) {
-        vTaskDelay(ticks);
-    }
+    static void delayTicks(TickType_t ticks) { vTaskDelay(ticks); }
 
     /// Yield to another ready task of equal priority.
-    static void yield() {
-        taskYIELD();
-    }
+    static void yield() { taskYIELD(); }
 
     /// Return the current tick count.
-    static TickType_t getTickCount() {
-        return xTaskGetTickCount();
-    }
+    static TickType_t getTickCount() { return xTaskGetTickCount(); }
 
     /// Globally disable interrupts (careful—no nesting tracking!).
-    static void disableInterrupts() {
-        portDISABLE_INTERRUPTS();
-    }
+    static void disableInterrupts() { portDISABLE_INTERRUPTS(); }
 
     /// Globally enable interrupts.
-    static void enableInterrupts() {
-        portENABLE_INTERRUPTS();
-    }
+    static void enableInterrupts() { portENABLE_INTERRUPTS(); }
 
    private:
     std::vector<TaskDescription> _tasks;

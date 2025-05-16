@@ -9,7 +9,7 @@
 namespace remote {
 
 class WirelessTask : public tasks::TaskAction {
-    bool initialize() { 
+    bool initialize() {
         pinMode(HWPin::WLS_LORA_CS, OUTPUT);
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
         return true;
@@ -21,11 +21,9 @@ class WirelessTask : public tasks::TaskAction {
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
     }
 
-    void end() {
-
-    }
+    void end() {}
 };
 
-} // namespace remote
+}  // namespace remote
 
-#endif // __TASK_WIRELESS_H__
+#endif  // __TASK_WIRELESS_H__

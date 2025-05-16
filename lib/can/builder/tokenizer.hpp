@@ -10,11 +10,9 @@ enum TokenType {
 
 };
 
-union TokenData {
-};
+union TokenData {};
 
-class Token {
-}
+class Token {};
 
 }  // namespace can
 

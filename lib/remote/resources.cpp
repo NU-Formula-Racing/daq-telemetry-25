@@ -7,8 +7,8 @@
 
 using namespace remote;
 
-Resources::Resources() : _driveDriver(),
-                         driveBus(_driveDriver, can::CANBaudRate::CBR_500KBPS),
-                         _dataDriver(),
-                         dataBus(_dataDriver, can::CANBaudRate::CBR_500KBPS) {
-}
+Resources::Resources()
+    : _driveDriver(),
+      driveBus(_driveDriver, can::CANBaudRate::CBR_500KBPS),
+      _dataDriver(),
+      dataBus(_dataDriver, can::CANBaudRate::CBR_500KBPS) {}

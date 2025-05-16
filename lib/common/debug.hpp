@@ -18,9 +18,14 @@
 #define __DEBUG_STRINGIFY_HELPER(x) #x
 #define __DEBUG_STRINGIFY(x) __DEBUG_STRINGIFY_HELPER(x)
 
-// Should return a string like this: [system:file_name.cpp:line_number] in the color defined by color_str
-#define __DEBUG_PREFIX(system_str, color_str) color_str "[" system_str "][" __DEBUG_FILE ":" __DEBUG_STRINGIFY(__DEBUG_LINE) "] " COLOR_RETURN
-#define __DEBUG_ERROR_PREFIX(system_str, color_str) COLOR_RED "[" system_str "][" __DEBUG_FILE ":" __DEBUG_STRINGIFY(__DEBUG_LINE) "] " COLOR_RETURN
+// Should return a string like this: [system:file_name.cpp:line_number] in the color defined by
+// color_str
+#define __DEBUG_PREFIX(system_str, color_str) \
+    color_str "[" system_str "][" __DEBUG_FILE ":" __DEBUG_STRINGIFY(__DEBUG_LINE) "]" \
+                                                                                   " " COLOR_RETURN
+#define __DEBUG_ERROR_PREFIX(system_str, color_str) \
+    COLOR_RED "[" system_str "][" __DEBUG_FILE ":" __DEBUG_STRINGIFY(__DEBUG_LINE) "]" \
+                                                                                   " " COLOR_RETURN
 
 #ifdef DEBUG
 
@@ -36,19 +41,19 @@
 #define DEBUG_PRINT_ERRORLN(system_str, color_str, fmt, ...) \
     fprintf(stderr, __DEBUG_ERROR_PREFIX(system_str, color_str) fmt "\n", ##__VA_ARGS__)
 
-#define DEBUG_PRINT_FATAL_ERROR(system_str, color_str, fmt, ...) \
-    do { \
+#define DEBUG_PRINT_FATAL_ERROR(system_str, color_str, fmt, ...)                              \
+    do {                                                                                      \
         fprintf(stderr, __DEBUG_ERROR_PREFIX(system_str, color_str) fmt "\n", ##__VA_ARGS__); \
-        abort(); \
+        abort();                                                                              \
     } while (0)
 
-#define DEBUG_PRINT_FATAL_ERRORLN(system_str, color_str, fmt, ...) \
-    do { \
+#define DEBUG_PRINT_FATAL_ERRORLN(system_str, color_str, fmt, ...)                            \
+    do {                                                                                      \
         fprintf(stderr, __DEBUG_ERROR_PREFIX(system_str, color_str) fmt "\n", ##__VA_ARGS__); \
-        abort(); \
+        abort();                                                                              \
     } while (0)
 
-#else // DEBUG
+#else  // DEBUG
 
 #define DEBUG_PRINT(system_str, color_str, fmt, ...) (void)0
 #define DEBUG_PRINTLN(system_str, color_str, fmt, ...) (void)0
@@ -57,6 +62,6 @@
 #define DEBUG_PRINT_FATAL_ERROR(system_str, color_str, fmt, ...) (void)0
 #define DEBUG_PRINT_FATAL_ERRORLN(system_str, color_str, fmt, ...) (void)0
 
-#endif // DEBUG
+#endif  // DEBUG
 
-#endif // __DEBUG_H__
+#endif  // __DEBUG_H__
