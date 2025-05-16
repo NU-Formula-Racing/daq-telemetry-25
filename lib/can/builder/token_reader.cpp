@@ -63,5 +63,5 @@ bool MockTokenReader::moveWord(size_t stepSize) {
 }
 
 void MockTokenReader::end() {
-    _pos = 0;
+    _pos = _content.size();
 }
