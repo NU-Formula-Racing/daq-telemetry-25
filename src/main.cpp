@@ -10,7 +10,6 @@
 #define APP unknown
 #endif
 
-
 void setup() {
     APP::setup();
 }

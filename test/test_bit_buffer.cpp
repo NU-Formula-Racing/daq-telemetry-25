@@ -25,8 +25,8 @@ void test_BBByteAlignedRW() {
 
 // Test read/write for a range that is within one byte (not an entire byte).
 void test_BBWithinByteRW() {
-    BitBuffer bb(8);  // One byte available.
-    uint8_t value = 0x5;  // 4-bit value (e.g. 0101)
+    BitBuffer bb(8);               // One byte available.
+    uint8_t value = 0x5;           // 4-bit value (e.g. 0101)
     BitBufferHandle handle(4, 0);  // Write only the lower 4 bits.
     bb.write(handle, value);
     Option<uint8_t> result = bb.read<uint8_t>(handle);
@@ -37,8 +37,8 @@ void test_BBWithinByteRW() {
 
 // Test read/write where the data spans across two bytes.
 void test_BBCrossByteRW() {
-    BitBuffer bb(16);  // 16 bits = 2 bytes.
-    uint16_t value = 0xABC; // 12-bit value (only lower 12 bits are relevant)
+    BitBuffer bb(16);               // 16 bits = 2 bytes.
+    uint16_t value = 0xABC;         // 12-bit value (only lower 12 bits are relevant)
     BitBufferHandle handle(12, 4);  // Write 12 bits starting at bit offset 4.
     bb.write(handle, value);
     Option<uint16_t> result = bb.read<uint16_t>(handle);
@@ -64,7 +64,7 @@ void test_BBOutOfRangeRW() {
 void test_BBInvalidRangeRW() {
     BitBuffer bb(8);
     uint8_t value = 0xAA;
-    BitBufferHandle handle(0, 0); // Zero bits to read/write.
+    BitBufferHandle handle(0, 0);  // Zero bits to read/write.
     bb.write(handle, value);
     Option<uint8_t> result = bb.read<uint8_t>(handle);
     // Expect that no valid data is read.
@@ -74,7 +74,7 @@ void test_BBInvalidRangeRW() {
 // Test read/write of various data types.
 void test_BBTypeRW() {
     BitBuffer bb(32);  // 32-bit buffer.
-    
+
     // Write and read an integer.
     int intValue = 123456;
     // Use a handle with size equal to sizeof(int)*8 bits starting at offset 0.

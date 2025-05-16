@@ -16,9 +16,7 @@ class Tests {
         return t;
     }
 
-    void addTest(const char* testName, void (*testFunc)()) {
-        _registry[testName] = testFunc;
-    }
+    void addTest(const char* testName, void (*testFunc)()) { _registry[testName] = testFunc; }
 
     void runTests() {
         UNITY_BEGIN();
