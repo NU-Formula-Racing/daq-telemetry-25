@@ -192,7 +192,6 @@ Result<CANSignalDescription> TelemBuilder::_parseSignal() {
         _signalFieldTable[i].apply(signal, data);
     }
 
-    
     return Result<CANSignalDescription>::ok(signal);
 }
 

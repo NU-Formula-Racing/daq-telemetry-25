@@ -27,7 +27,7 @@ class BitBuffer {
         write(handle, &value, sizeof(T));
     }
 
-    void write(BitBufferHandle handle, const void *data, size_t size);
+    void write(BitBufferHandle handle, const void* data, size_t size);
 
     template <typename T>
     Option<T> read(BitBufferHandle handle) const {
@@ -39,14 +39,14 @@ class BitBuffer {
         }
     }
 
-    Option<void *> read(BitBufferHandle handle) const;
-    bool read(BitBufferHandle handle, void *data) const;
+    Option<void*> read(BitBufferHandle handle) const;
+    bool read(BitBufferHandle handle, void* data) const;
 
     size_t bitSize() const { return _bitSize; }
     size_t byteSize() const { return (_bitSize + 7) / 8; }
 
    private:
-    uint8_t *_buffer;
+    uint8_t* _buffer;
     size_t _bitSize;
 };
 

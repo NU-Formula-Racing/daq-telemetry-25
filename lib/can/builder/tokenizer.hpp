@@ -98,12 +98,11 @@ class Tokenizer {
     /// @brief Skip the tokens until you encounter a character
     /// @return true on success
     bool eatUntil(const char character);
-    
 
    private:
     TokenReader& _reader;  // word reader
 
-    common::Option<Token> _interpWord(char *buf, std::size_t len);
+    common::Option<Token> _interpWord(char* buf, std::size_t len);
 };
 
 }  // namespace can

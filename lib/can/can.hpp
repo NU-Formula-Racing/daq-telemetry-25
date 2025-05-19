@@ -141,7 +141,7 @@ class CANBus {
 
     /// @brief Prints out all of the messages on the bus
     /// @param stream The stream to print it to
-    void printBus(std::ostream &stream) const;
+    void printBus(std::ostream& stream) const;
 
    private:
     // HAL
@@ -194,7 +194,6 @@ class CANSignal {
     template <typename T>
     T getValue();
 };
-
 
 class CANMessage {
    public:
