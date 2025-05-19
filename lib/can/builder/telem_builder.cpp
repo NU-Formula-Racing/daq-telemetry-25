@@ -191,7 +191,8 @@ Result<CANSignalDescription> TelemBuilder::_parseSignal() {
         }
         _signalFieldTable[i].apply(signal, data);
     }
-    // defaults & overrides would go here...
+
+    
     return Result<CANSignalDescription>::ok(signal);
 }
 

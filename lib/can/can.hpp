@@ -125,11 +125,23 @@ class CANBus {
     /// @return Whether the messages are valid or not
     bool validateMessages();
 
+    /// @brief Set the value of a signal
+    /// @tparam T The type of the value
+    /// @param signal The signal to set the value of
+    /// @param value The value to set
     template <typename T>
     void setSignalValue(const CANSignal& signal, T value);
 
+    /// @brief Get the value of a signal
+    /// @tparam T the type of the vlaue
+    /// @param signal The signal to get the value of
+    /// @return The value of the signal
     template <typename T>
     T getSignalValue(const CANSignal& signal);
+
+    /// @brief Prints out all of the messages on the bus
+    /// @param stream The stream to print it to
+    void printBus(std::ostream &stream) const;
 
    private:
     // HAL

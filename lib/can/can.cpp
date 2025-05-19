@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <vector>
 #include <mutex>
+#include <vector>
 
 using namespace can;
 using namespace common;
@@ -88,6 +88,35 @@ void CANBus::registerCallback(uint32_t messageID, std::function<void(const CANMe
 
 bool CANBus::validateMessages() {
     return true;
+}
+
+void CANBus::printBus(std::ostream& stream) const {
+    stream << "*** BUS BEGIN ***" << std::endl;
+
+    // Iterate all registered messages
+    for (const auto& entry : _messages) {
+        const CANMessage& msg = *entry.second;
+
+        // Print message header
+        stream << "Message ID=0x" << std::hex << std::setw(3) << std::setfill('0') << msg.id
+               << std::dec << "  Length=" << int(msg.length) << " bytes" << std::endl;
+
+        // Iterate signals within this message
+        for (size_t idx = 0; idx < msg.signals.size(); ++idx) {
+            const CANSignal& sig = msg.signals[idx];
+            // Access BitBufferHandle fields
+            size_t offset = sig.handle.offset;
+            size_t size = sig.handle.size;
+
+            stream << "  Signal[" << idx << "]: "
+                   << "offset=" << offset << ", width=" << size << " bits"
+                   << ", signed=" << std::boolalpha << sig.isSigned << std::noboolalpha
+                   << ", endianness=" << (sig.endianness == MSG_BIG_ENDIAN ? "big" : "little")
+                   << ", factor=" << sig.factor << ", offset=" << sig.offset << std::endl;
+        }
+    }
+
+    stream << "*** BUS END ***" << std::endl;
 }
 
 RawCANMessage CANBus::getRawMessage(const CANMessage& message) {
