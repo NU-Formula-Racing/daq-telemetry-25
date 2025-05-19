@@ -80,8 +80,7 @@ class Tokenizer {
    public:
     /// @brief Construct a tokenizer.
     /// @param reader Underlying word-based reader (file or memory).
-    /// @param errorCb Called on lexical errors.
-    Tokenizer(TokenReader& reader);
+    Tokenizer(TokenReader& reader) : _reader(reader) {}
 
     /// @brief Initialize the underlying reader. Must be called before next().
     /// @return true on success, false on failure.
