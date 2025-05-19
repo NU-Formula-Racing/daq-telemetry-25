@@ -29,7 +29,6 @@ The format is hierarchical, line-oriented, and version-controlled-friendly (diff
 | `>`    | **Board / ECU**   | —               | `> POWERTRAIN`                 |
 | `>>`   | **Message**       | Board           | `>> DRIVESTATUS 0x200 8`       |
 | `>>>`  | **Signal**        | Message         | `>>> MotorRPM uint16 0 16 1 0` |
-| `>>>>` | **Enum entry**    | Signal (enum)   | `>>>> CHARGE 1`                |
 
 _Every `>>>` line **must** be nested under a `>>`, and every `>>` under a `>` (strict hierarchy)._
 
@@ -53,9 +52,10 @@ _Every `>>>` line **must** be nested under a `>>`, and every `>>` under a `>` (s
 !! optionName optionValue
 ```
 
-| Option        | Value type  | Effect                                                                              |
-| ------------- | ----------- | ----------------------------------------------------------------------------------- |
-| `logPeriodMs` | **int > 0** | Default logging period (ms) applied to _all_ messages unless firmware overrides it. |
+| Option             | Value type  | Effect                                                                                            |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
+| `logPeriodMs`      | **int > 0** | Default logging period (ms) applied to _all_ messages unless firmware overrides it.               |
+| `wirelessPeriodMs` | **int > 0** | Default wirleess transmission period (ms) applied to _all_ messages unless firmware overrides it. |
 
 Later duplicate `!! logPeriodMs …` lines override earlier ones.
 Unknown option names: parser **warns** but continues (forward-compatibility).
@@ -110,20 +110,7 @@ _No extended-ID flag and no period field; IDs are always standard 11-bit._
 
 ---
 
-### 8 Enumerations (only if `dataType = enum`)
-
-Immediately after the signal line, list one or more enum entries:
-
-```
->>>> EnumName rawValue
-```
-
-- `rawValue` is an int that fits in `length` bits.
-- Parsing of enum entries stops at the first non-`>>>>` line.
-
----
-
-### 9 Validation Checklist
+### 8 Validation Checklist
 
 1. **Hierarchy** – A `>>>` without a current `>>`, or a `>>` without a current `>`, is an error.
 2. **Bit-fit** – `startBit + length` > `messageSize × 8` → error.
@@ -138,7 +125,7 @@ Immediately after the signal line, list one or more enum entries:
 
 ---
 
-### 10 Informal EBNF
+### 9 Informal EBNF
 
 ```
 file        ::= { blank | comment | option | board }
@@ -160,14 +147,13 @@ hex         ::= "0x" 1*hexDigit
 
 ---
 
-### 11 Complete Worked Example
+### 10 Complete Worked Example
 
 ```ini
 !! logPeriodMs 50     # global default: 20 Hz logging
 
-# ───── POWERTRAIN ECU ───────────────────────────────────────────────────────
-> POWERTRAIN            # traction inverter node
-
+# ECU Node
+> ECU           # traction inverter node
 >> DRIVESTATUS 0x200 8  # status every 50 ms by default
 >>> MotorRPM       uint16  0 16 1      0           # little-endian (default)
 >>> InverterTemp   int16  16 16 0.1    0
@@ -177,18 +163,11 @@ hex         ::= "0x" 1*hexDigit
 >>> TorqueCmd      int16   0 16 0.01   0
 >>> Enable         bool   16  1 1      0
 
-# ───── BMS ECU ──────────────────────────────────────────────────────────────
 > BMS
-
 >> BMS_PACK 0x300 8
 >>> PackVoltage    float  0 32 0.001   0
 >>> PackCurrent    float 32 32 0.001   0
 
->> BMS_MODE 0x301 1
->>> Mode enum 0 3 1 0
->>>> OFF    0
->>>> CHARGE 1
->>>> DRIVE  2
 ```
 
 ---

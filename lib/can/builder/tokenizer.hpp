@@ -20,7 +20,6 @@ enum TokenType {
     TT_BOARD_PREFIX,    // ">" board definition
     TT_MESSAGE_PREFIX,  // ">>" message definition
     TT_SIGNAL_PREFIX,   // ">>>" signal definition
-    TT_ENUM_PREFIX,     // ">>>>" enum entry
     TT_IDENTIFIER,      // identifiers (names)
     TT_HEX_INT,         // hexadecimal literal (0x...)
     TT_INT,             // decimal integer literal

@@ -128,29 +128,7 @@ void test_Tokenizer_SignalLine() {
     tok.end();
 };
 
-// Test enum entry: >>>> MODE 2
-void test_Tokenizer_EnumEntry() {
-    MockTokenReader reader(">>>> MODE 2");
-    Tokenizer tok(reader);
-    TEST_ASSERT(tok.start());
-
-    auto p = tok.next().value();
-    TEST_ASSERT_EQUAL_INT(TokenType::TT_ENUM_PREFIX, p.type);
-
-    auto name = tok.next().value();
-    TEST_ASSERT_EQUAL_INT(TokenType::TT_IDENTIFIER, name.type);
-    TEST_ASSERT_EQUAL_STRING("MODE", IdentifierPool::instance().get(name.data.idHandle));
-
-    auto v = tok.next().value();
-    TEST_ASSERT_EQUAL_INT(TokenType::TT_INT, v.type);
-    TEST_ASSERT_EQUAL_INT(2, v.data.intValue);
-
-    TEST_ASSERT_FALSE(tok.next());
-    tok.end();
-}
-
 TEST_FUNC(test_Tokenizer_GlobalOption);
 TEST_FUNC(test_Tokenizer_BoardLine);
 TEST_FUNC(test_Tokenizer_MessageLine);
 TEST_FUNC(test_Tokenizer_SignalLine);
-TEST_FUNC(test_Tokenizer_EnumEntry);

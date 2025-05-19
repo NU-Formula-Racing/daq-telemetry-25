@@ -62,7 +62,6 @@ class TelemBuilder {
     Result<bool> _parseGlobalOption(TelemetryOptions& opts);
     Result<CANMessageDescription> _parseMessage();
     Result<CANSignalDescription> _parseSignal();
-    Result<bool> _skipEnumEntries();
     Result<bool> _applyOptionByName(TelemetryOptions& opts, const std::string& name,
                                     const TokenData& data);
 };

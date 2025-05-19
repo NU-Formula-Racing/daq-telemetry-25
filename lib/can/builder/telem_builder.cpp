@@ -195,19 +195,6 @@ Result<CANSignalDescription> TelemBuilder::_parseSignal() {
     return Result<CANSignalDescription>::ok(signal);
 }
 
-Result<bool> TelemBuilder::_skipEnumEntries() {
-    while (true) {
-        Option<Token> tok = _tokenizer.peek();
-        if (!tok.isSome() || tok.value().type != TokenType::TT_ENUM_PREFIX) {
-            break;
-        }
-        _tokenizer.next();
-        _tokenizer.next();
-        _tokenizer.next();
-    }
-    return Result<bool>::ok(true);
-}
-
 Result<bool> TelemBuilder::_applyOptionByName(TelemetryOptions& opts, const std::string& name,
                                               const TokenData& data) {
     for (std::size_t i = 0; i < sizeof(_optionTable) / sizeof(_optionTable[0]); ++i) {

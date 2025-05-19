@@ -20,7 +20,7 @@ void test_Tokenizer_Empty() {
 
 // Test recognition of all prefix tokens
 void test_Tokenizer_Prefixes() {
-    MockTokenReader reader("!! > >> >>> >>>>");
+    MockTokenReader reader("!! > >> >>>");
     Tokenizer tok(reader);
     TEST_ASSERT(tok.start());
 
@@ -35,9 +35,6 @@ void test_Tokenizer_Prefixes() {
 
     auto t4 = tok.next().value();
     TEST_ASSERT_EQUAL_INT(TokenType::TT_SIGNAL_PREFIX, t4.type);
-
-    auto t5 = tok.next().value();
-    TEST_ASSERT_EQUAL_INT(TokenType::TT_ENUM_PREFIX, t5.type);
 
     // no more tokens
     TEST_ASSERT_FALSE(tok.next());

@@ -18,8 +18,10 @@ struct PrefixEntry {
 };
 
 static constexpr PrefixEntry prefixLUT[] = {
-    {">>>>", TT_ENUM_PREFIX, 4},  {">>>", TT_SIGNAL_PREFIX, 3}, {"!!", TT_OPTION_PREFIX, 2},
-    {">>", TT_MESSAGE_PREFIX, 2}, {">", TT_BOARD_PREFIX, 1},
+    {">>>", TT_SIGNAL_PREFIX, 3},
+    {"!!", TT_OPTION_PREFIX, 2},
+    {">>", TT_MESSAGE_PREFIX, 2},
+    {">", TT_BOARD_PREFIX, 1},
 };
 
 static const std::size_t PREFIX_COUNT = sizeof(prefixLUT) / sizeof(prefixLUT[0]);

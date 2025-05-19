@@ -108,32 +108,7 @@ void test_TelemBuilder_SignEndianOverride() {
     TEST_ASSERT_EQUAL_INT(can::MSG_BIG_ENDIAN, sig.endianness);
 }
 
-// Test: enums generate prefixed entries in printBus but fields exist
-void test_TelemBuilder_EnumEntries() {
-    const char* cfg =
-        "> B3\n"
-        ">> M3 0x300 1\n"
-        ">>> Mode enum 0 3 1 0\n"
-        ">>>> OFF 0\n"
-        ">>>> ON 1\n";
-
-    TelemetryOptions opts;
-    TestDriver drv;
-    CANBus bus(drv, CANBaudRate::CBR_125KBPS);
-    bool ok = buildBus(cfg, opts, bus);
-    TEST_ASSERT(ok);
-
-    const auto& msgs = bus.getMessages();
-    TEST_ASSERT_EQUAL_INT(1, msgs.size());
-    auto it = msgs.find(0x300);
-    TEST_ASSERT(it != msgs.end());
-    const CANMessage& msg = *it->second;
-    TEST_ASSERT_EQUAL_INT(1, msg.signals.size());
-    // enum values are not stored in signals vector, ensure length correct
-    TEST_ASSERT_EQUAL_UINT(1, msg.signals[0].handle.size);
-}
 
 TEST_FUNC(test_TelemBuilder_Simple);
 TEST_FUNC(test_TelemBuilder_OptionOverride);
 TEST_FUNC(test_TelemBuilder_SignEndianOverride);
-TEST_FUNC(test_TelemBuilder_EnumEntries);
