@@ -109,4 +109,8 @@ common::Option<Token> Tokenizer::next() {
     return common::Option<Token>::some(tk);
 }
 
+bool Tokenizer::eatUntil(const char character) {
+    _reader.eatUntil(character);
+}
+
 }  // namespace can

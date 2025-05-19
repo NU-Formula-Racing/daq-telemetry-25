@@ -21,11 +21,11 @@ enum TokenType {
     TT_MESSAGE_PREFIX,  // ">>" message definition
     TT_SIGNAL_PREFIX,   // ">>>" signal definition
     TT_ENUM_PREFIX,     // ">>>>" enum entry
-    TT_IDENTIFIER,     // identifiers (names)
+    TT_IDENTIFIER,      // identifiers (names)
     TT_HEX_INT,         // hexadecimal literal (0x...)
-    TT_INT,            // decimal integer literal
-    TT_FLOAT,          // floating-point literal
-    TT_EOF       // end of input
+    TT_INT,             // decimal integer literal
+    TT_FLOAT,           // floating-point literal
+    TT_EOF              // end of input
 };
 
 /// @brief Handle representing an interned identifier.
@@ -92,6 +92,12 @@ class Tokenizer {
     /// @brief Retrieve the next token, or none() at EOF.
     /// @return Some(Token) if available, none() otherwise.
     common::Option<Token> next();
+
+    common::Option<Token> peek();
+
+    /// @brief Skip the tokens until you encounter a character
+    /// @return true on success
+    bool eatUntil(const char character);
 
    private:
     TokenReader& _reader;  // word reader

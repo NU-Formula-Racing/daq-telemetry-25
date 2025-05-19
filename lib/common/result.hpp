@@ -13,7 +13,6 @@ template <typename T>
 class Result {
    public:
     static Result<T> ok(T value) { return Result<T>(value); }
-    static Result<T> errorResult() { return Result<T>(true); }
     static Result<T> errorResult(std::string errorMessage) { return Result<T>(true, errorMessage); }
 
     operator bool() const { return !_error; }
@@ -37,7 +36,6 @@ class Result {
     std::string _errorMessage;
 
     Result(T value) : _value(value), _error(false), _errorMessage("") {}
-    Result(bool error) : _error(error), _errorMessage(""), _value(T()) {}
     Result(bool error, std::string errorMessage) : _error(error), _errorMessage(errorMessage) {}
 };
 
