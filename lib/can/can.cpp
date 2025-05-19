@@ -1,6 +1,7 @@
 #include <can.hpp>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <vector>
 
 using namespace can;
@@ -10,53 +11,43 @@ CANBus::~CANBus() {
     _driver.uninstall();
 }
 
-CANMessage CANBus::addMessage(const CANMessageDescription& description) {
-    // if we have already initialized the bus, we cannot add messages
+CANMessage& CANBus::addMessage(const CANMessageDescription& desc) {
     if (_isInitialized) {
         CAN_DEBUG_PRINT_ERROR("Cannot add messages after initialization.");
-        return CANMessage{.bus = *this, .handle = BitBufferHandle::none()};
+        // handle error...
     }
 
-    // increment our bit offset to the next byte boundary
-    _nextBitOffset = (_nextBitOffset + 7) / 8 * 8;
+    _nextBitOffset = ((_nextBitOffset + 7) / 8) * 8;
+    BitBufferHandle messageHandle(desc.length * 8, _nextBitOffset);
 
-    // allocate memory for the vector of CANSignals
-    BitBufferHandle messageHandle(description.length * 8, _nextBitOffset);
-    std::vector<CANSignal> signals(description.signals.size());
+    // construct on the heap using the ctor without trailing-_ names
+    std::unique_ptr<CANMessage> msgPtr =
+        std::unique_ptr<CANMessage>(new CANMessage(*this,         // bus
+                                                   desc.id,       // id
+                                                   desc.length,   // length
+                                                   desc.type,     // type
+                                                   messageHandle  // bufferHandle
+                                                   ));
+    auto& msg = *msgPtr;  // stable reference
 
-    // create a new message and add it to our list of messages
-    CANMessage msg = (CANMessage){.bus = *this,
-                                  .id = description.id,
-                                  .length = description.length,
-                                  .type = description.type,
-                                  .bufferHandle = messageHandle,
-                                  .signals = signals};
-
-    _messages[description.id] = msg;
-
-    size_t offset = _nextBitOffset;
-
-    // now we need to add the signals to the message
-    for (int i = 0; i < description.signals.size(); i++) {
-        // create a new can signal and add it to our list of signals
-        const CANSignalDescription& signalDescription = description.signals[i];
-        BitBufferHandle signalHandle(signalDescription.length, offset + signalDescription.startBit);
-
-        CANSignal signal = (CANSignal){.message = msg,
-                                       .handle = signalHandle,
-                                       .isSigned = signalDescription.isSigned,
-                                       .endianness = signalDescription.endianness,
-                                       .factor = signalDescription.factor,
-                                       .offset = signalDescription.offset};
-
-        signals[i] = signal;
+    msg.signals.reserve(desc.signals.size());
+    for (auto const& sd : desc.signals) {
+        BitBufferHandle h(sd.length, messageHandle.offset + sd.startBit);
+        msg.signals.emplace_back(msg,            // message
+                                 h,              // handle
+                                 sd.isSigned,    // isSigned
+                                 sd.endianness,  // endianness
+                                 sd.factor,      // factor
+                                 sd.offset       // offset
+        );
     }
 
-    if (description.onReceive) {
-        registerCallback(description.id, description.onReceive);
+    if (desc.onReceive) {
+        registerCallback(desc.id, desc.onReceive);
     }
 
-    return msg;
+    auto it = _messages.emplace(desc.id, std::move(msgPtr)).first;
+    return *it->second;
 }
 
 void CANBus::initialize() {
@@ -70,7 +61,7 @@ void CANBus::initialize() {
     // calculate the amount of bits that we need for the CANSignal
     size_t totalBits = 0;
     for (auto& msg : _messages) {
-        totalBits += msg.second.length * 8;
+        totalBits += msg.second->length * 8;
     }
 
     CAN_DEBUG_PRINT("Allocating buffer of size %d for CAN!\n", totalBits);
@@ -78,7 +69,7 @@ void CANBus::initialize() {
     this->_isInitialized = true;
 }
 
-void CANBus::sendMessage(CANMessage& message) const {
+void CANBus::sendMessage(const CANMessage& message) const {
     RawCANMessage rawMessage = encodeMessage(message);
     this->_driver.sendMessage(rawMessage);
 }
@@ -87,14 +78,16 @@ void CANBus::update() {
     RawCANMessage message;
     if (!_driver.receiveMessage(&message)) return;
 
-    // do something with the message
+    // figure out what message it is, decode it, then store it in the buffer
 }
 
 void CANBus::registerCallback(uint32_t messageID, std::function<void(const CANMessage&)> callback) {
     _callbacks[messageID] = callback;
 }
 
-bool CANBus::validateMessages() {}
+bool CANBus::validateMessages() {
+    return true;
+}
 
 RawCANMessage CANBus::encodeMessage(const CANMessage& message) const {
     RawCANMessage res;

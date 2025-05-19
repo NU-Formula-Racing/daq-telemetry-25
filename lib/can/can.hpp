@@ -5,6 +5,7 @@
 
 #include <bit_buffer.hpp>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -103,7 +104,7 @@ class CANBus {
     /// Registers the onReceive callback (if provided) internally.
     /// @param description The description of the message.
     /// @return The newly added CAN Message
-    CANMessage addMessage(const CANMessageDescription& description);
+    CANMessage& addMessage(const CANMessageDescription& description);
 
     void initialize();
 
@@ -111,7 +112,7 @@ class CANBus {
 
     /// @brief Sends a CAN message.
     /// @param message The CAN message to send.
-    void sendMessage(CANMessage& message) const;
+    void sendMessage(const CANMessage& message) const;
 
     /// @brief Registers a callback for a given message ID.
     /// When a message with this ID is received, the callback will be invoked.
@@ -130,7 +131,7 @@ class CANBus {
     CANBaudRate _baudRate;
 
     // CAN DBC
-    std::unordered_map<uint32_t, CANMessage&> _messages;
+    std::unordered_map<uint32_t, std::unique_ptr<CANMessage>> _messages;
 
     // Buffer management
     BitBuffer _buffer;
@@ -148,35 +149,45 @@ class CANBus {
 
 class CANSignal {
    public:
-    const CANMessage& message;
+    const CANMessage& message;  // non-owning back-ref
     const BitBufferHandle handle;
     const bool isSigned;
     const Endianness endianness;
     const double factor;
     const double offset;
 
-    CANSignal(const CANSignal& other) = default;
-    CANSignal& operator=(CANSignal&& other) = default;
-    CANSignal& operator=(const CANSignal& other) = default;
+    // ctor uses same names as members
+    CANSignal(const CANMessage& message, BitBufferHandle handle, bool isSigned,
+              Endianness endianness, double factor, double offset) noexcept
+        : message(message),
+          handle(handle),
+          isSigned(isSigned),
+          endianness(endianness),
+          factor(factor),
+          offset(offset) {}
 
-    template <typename T>
-    void setValue(T value) const;
+    CANSignal() = delete;
+    CANSignal& operator=(const CANSignal&) = delete;
 };
 
 class CANMessage {
    public:
-    const CANBus& bus;
+    const CANBus& bus;  // parent bus
     const uint32_t id;
     const uint8_t length;
     const FrameType type;
     const BitBufferHandle bufferHandle;
-    const std::vector<CANSignal> signals;
+    std::vector<CANSignal> signals;  // mutable so we can fill it once
 
-    CANMessage(const CANMessage& other) = default;
-    CANMessage& operator=(CANMessage&& other) = default;
-    CANMessage& operator=(const CANMessage& other) = default;
+    // ctor uses same names as members
+    CANMessage(const CANBus& bus, uint32_t id, uint8_t length, FrameType type,
+               BitBufferHandle bufferHandle) noexcept
+        : bus(bus), id(id), length(length), type(type), bufferHandle(bufferHandle), signals() {}
 
-    void sendMessage() { bus.sendMessage(*this); }
+    CANMessage() = delete;
+    CANMessage& operator=(const CANMessage&) = delete;
+
+    void sendMessage() const { bus.sendMessage(*this); }
 };
 
 }  // namespace can
