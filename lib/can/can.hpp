@@ -112,7 +112,7 @@ class CANBus {
 
     /// @brief Sends a CAN message.
     /// @param message The CAN message to send.
-    void sendMessage(const CANMessage& message) const;
+    void sendMessage(const CANMessage& message);
 
     /// @brief Registers a callback for a given message ID.
     /// When a message with this ID is received, the callback will be invoked.
@@ -150,8 +150,8 @@ class CANBus {
     // Maps CAN message IDs to their registered callback functions.
     std::unordered_map<uint32_t, std::function<void(const CANMessage&)>> _callbacks;
 
-    RawCANMessage getRawMessage(const CANMessage& message) const;
-    bool writeRawMessage(const RawCANMessage raw) {}
+    RawCANMessage getRawMessage(const CANMessage& message);
+    bool writeRawMessage(const RawCANMessage raw);
 };
 
 class CANSignal {
@@ -177,19 +177,16 @@ class CANSignal {
     CANSignal& operator=(const CANSignal&) = delete;
 
     template <typename T>
-    void setValue(T value) {
-        message.bus.setSignalValue(*this, value);
-    }
+    void setValue(T value);
 
     template <typename T>
-    T getValue() {
-        return message.bus.getSignalValue<T>();
-    }
+    T getValue();
 };
+
 
 class CANMessage {
    public:
-    const CANBus& bus;  // parent bus
+    CANBus& bus;  // parent bus
     const uint32_t id;
     const uint8_t length;
     const FrameType type;
@@ -197,14 +194,14 @@ class CANMessage {
     std::vector<CANSignal> signals;  // mutable so we can fill it once
 
     // ctor uses same names as members
-    CANMessage(const CANBus& bus, uint32_t id, uint8_t length, FrameType type,
+    CANMessage(CANBus& bus, uint32_t id, uint8_t length, FrameType type,
                BitBufferHandle bufferHandle) noexcept
         : bus(bus), id(id), length(length), type(type), bufferHandle(bufferHandle), signals() {}
 
     CANMessage() = delete;
     CANMessage& operator=(const CANMessage&) = delete;
 
-    void sendMessage() const { bus.sendMessage(*this); }
+    void sendMessage() { bus.sendMessage(*this); }
 };
 
 template <typename T>
@@ -238,6 +235,16 @@ T CANBus::getSignalValue(const CANSignal& signal) {
     // 3) apply factor + offset
     double v = static_cast<double>(raw) * signal.factor + signal.offset;
     return static_cast<T>(v);
+}
+
+template <typename T>
+void CANSignal::setValue(T value) {
+    message.bus.setSignalValue(*this, value);
+}
+
+template <typename T>
+T CANSignal::getValue() {
+    return message.bus.getSignalValue<T>(*this);
 }
 
 }  // namespace can

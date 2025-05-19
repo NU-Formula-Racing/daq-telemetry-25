@@ -3,6 +3,7 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 using namespace can;
 using namespace common;
@@ -69,7 +70,7 @@ void CANBus::initialize() {
     this->_isInitialized = true;
 }
 
-void CANBus::sendMessage(const CANMessage& message) const {
+void CANBus::sendMessage(const CANMessage& message) {
     RawCANMessage rawMessage = getRawMessage(message);
     this->_driver.sendMessage(rawMessage);
 }
@@ -89,7 +90,7 @@ bool CANBus::validateMessages() {
     return true;
 }
 
-RawCANMessage CANBus::getRawMessage(const CANMessage& message) const {
+RawCANMessage CANBus::getRawMessage(const CANMessage& message) {
     RawCANMessage raw{};
     raw.id = message.id;
     raw.length = message.length;
