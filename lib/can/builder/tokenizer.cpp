@@ -24,7 +24,7 @@ static constexpr PrefixEntry prefixLUT[] = {
 static const std::size_t PREFIX_COUNT = sizeof(prefixLUT) / sizeof(prefixLUT[0]);
 
 
-// --- IdentifierPool --------------------------------------------------------
+
 IdentifierPool::IdentifierPool() {}
 
 IdentifierPoolHandle IdentifierPool::intern(const char* src) {
@@ -41,7 +41,9 @@ const char* IdentifierPool::get(IdentifierPoolHandle h) const {
     return "";
 }
 
-// --- Tokenizer -------------------------------------------------------------
+
+Tokenizer::Tokenizer(TokenReader &reader) : _reader(reader) {}
+
 bool Tokenizer::start() {
     return _reader.start();
 }
