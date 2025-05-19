@@ -48,6 +48,12 @@ void Tokenizer::end() {
 }
 
 common::Option<Token> Tokenizer::next() {
+    common::Option<Token> tk = peek();
+    _reader.moveWord();
+    return tk;
+}
+
+common::Option<Token> Tokenizer::peek() {
     char buf[LOCAL_BUF_SIZE];
     std::size_t len = 0;
 
@@ -61,13 +67,21 @@ common::Option<Token> Tokenizer::next() {
         break;
     }
 
+    common::Option<Token> tk = _interpWord(buf, len);
+    return tk;
+}
+
+bool Tokenizer::eatUntil(const char character) {
+    _reader.eatUntil(character);
+}
+
+common::Option<Token> Tokenizer::_interpWord(char* buf, std::size_t len) {
     Token tk;
     // Try prefix match
     for (std::size_t i = 0; i < PREFIX_COUNT; ++i) {
         const auto& e = prefixLUT[i];
         if (len == e.len && std::memcmp(buf, e.str, e.len) == 0) {
             tk.type = e.tt;
-            _reader.moveWord();
             return common::Option<Token>::some(tk);
         }
     }
@@ -80,7 +94,6 @@ common::Option<Token> Tokenizer::next() {
         if (endptr == buf + len) {
             tk.type = TT_HEX_INT;
             tk.data.uintValue = v;
-            _reader.moveWord();
             return common::Option<Token>::some(tk);
         }
     }
@@ -89,7 +102,6 @@ common::Option<Token> Tokenizer::next() {
     if (endptr == buf + len) {
         tk.type = TT_INT;
         tk.data.intValue = iv;
-        _reader.moveWord();
         return common::Option<Token>::some(tk);
     }
     // Floating point?
@@ -97,7 +109,6 @@ common::Option<Token> Tokenizer::next() {
     if (endptr == buf + len) {
         tk.type = TT_FLOAT;
         tk.data.floatValue = dv;
-        _reader.moveWord();
         return common::Option<Token>::some(tk);
     }
 
@@ -105,12 +116,7 @@ common::Option<Token> Tokenizer::next() {
     tk.type = TT_IDENTIFIER;
     tk.data.idHandle = IdentifierPool::instance().intern(buf);
 
-    _reader.moveWord();
     return common::Option<Token>::some(tk);
-}
-
-bool Tokenizer::eatUntil(const char character) {
-    _reader.eatUntil(character);
 }
 
 }  // namespace can
