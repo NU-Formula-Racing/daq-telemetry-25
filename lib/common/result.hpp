@@ -2,6 +2,9 @@
 #define __RESULT_H__
 
 #include <sstream>
+#include <vector>
+#include <string>
+#include <initializer_list>
 #include <functional>
 
 namespace common {
