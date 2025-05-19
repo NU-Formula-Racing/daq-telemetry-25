@@ -125,6 +125,12 @@ class CANBus {
     /// @return Whether the messages are valid or not
     bool validateMessages();
 
+    template <typename T>
+    void setSignalValue(const CANSignal& signal, T value);
+
+    template <typename T>
+    T getSignalValue(const CANSignal& signal);
+
    private:
     // HAL
     CANDriver& _driver;
@@ -134,6 +140,7 @@ class CANBus {
     std::unordered_map<uint32_t, std::unique_ptr<CANMessage>> _messages;
 
     // Buffer management
+    // holds the encoded values that are sent over can
     BitBuffer _buffer;
     std::mutex _bufferMutex;
     size_t _nextBitOffset;
@@ -143,8 +150,8 @@ class CANBus {
     // Maps CAN message IDs to their registered callback functions.
     std::unordered_map<uint32_t, std::function<void(const CANMessage&)>> _callbacks;
 
-    RawCANMessage encodeMessage(const CANMessage& message) const;
-    RawCANMessage decodeMessage(const CANMessage& message, const RawCANMessage& payload) const;
+    RawCANMessage getRawMessage(const CANMessage& message) const;
+    bool writeRawMessage(const RawCANMessage raw) {}
 };
 
 class CANSignal {
@@ -168,6 +175,16 @@ class CANSignal {
 
     CANSignal() = delete;
     CANSignal& operator=(const CANSignal&) = delete;
+
+    template <typename T>
+    void setValue(T value) {
+        message.bus.setSignalValue(*this, value);
+    }
+
+    template <typename T>
+    T getValue() {
+        return message.bus.getSignalValue<T>();
+    }
 };
 
 class CANMessage {
@@ -189,6 +206,39 @@ class CANMessage {
 
     void sendMessage() const { bus.sendMessage(*this); }
 };
+
+template <typename T>
+void CANBus::setSignalValue(const CANSignal& signal, T value) {
+    // 1) scale down to raw integer
+    using RawType = typename std::conditional<signal.isSigned, int64_t, uint64_t>::type;
+    double normalized = (static_cast<double>(value) - signal.offset) / signal.factor;
+    RawType raw = static_cast<RawType>(normalized);
+
+    // 2) write into the big buffer
+    std::lock_guard<std::mutex> lk(_bufferMutex);
+    _buffer.write(signal.handle, raw);
+}
+
+template <typename T>
+T CANBus::getSignalValue(const CANSignal& signal) {
+    // 1) read the raw bits back out
+    using RawType = typename std::conditional<signal.isSigned, int64_t, uint64_t>::type;
+    RawType raw = 0;
+    {
+        std::lock_guard<std::mutex> lk(_bufferMutex);
+        _buffer.read(signal.handle, &raw);
+    }
+
+    // 2) if signed, sign-extend
+    if (signal.isSigned) {
+        raw = static_cast<RawType>((static_cast<uint64_t>(raw) << (64 - signal.handle.size)) >>
+                                   (64 - signal.handle.size));
+    }
+
+    // 3) apply factor + offset
+    double v = static_cast<double>(raw) * signal.factor + signal.offset;
+    return static_cast<T>(v);
+}
 
 }  // namespace can
 

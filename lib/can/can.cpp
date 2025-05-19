@@ -70,7 +70,7 @@ void CANBus::initialize() {
 }
 
 void CANBus::sendMessage(const CANMessage& message) const {
-    RawCANMessage rawMessage = encodeMessage(message);
+    RawCANMessage rawMessage = getRawMessage(message);
     this->_driver.sendMessage(rawMessage);
 }
 
@@ -89,11 +89,40 @@ bool CANBus::validateMessages() {
     return true;
 }
 
-RawCANMessage CANBus::encodeMessage(const CANMessage& message) const {
-    RawCANMessage res;
-    res.data64 = 0;
+RawCANMessage CANBus::getRawMessage(const CANMessage& message) const {
+    RawCANMessage raw{};
+    raw.id = message.id;
+    raw.length = message.length;
+    raw.data64 = 0;
+
+    // snapshot exactly `length` bytes out of our bit-buffer
+    {
+        std::lock_guard<std::mutex> lk(_bufferMutex);
+        uint8_t tmp[8] = {0};
+        _buffer.read(message.bufferHandle, tmp);
+        std::memcpy(raw.data, tmp, raw.length);
+    }
+
+    return raw;
 }
 
-RawCANMessage CANBus::decodeMessage(const CANMessage& message, const RawCANMessage& payload) const {
+bool CANBus::writeRawMessage(const RawCANMessage raw) {
+    // find the message by ID
+    auto it = _messages.find(raw.id);
+    if (it == _messages.end()) return false;
+    auto& msg = *it->second;
 
+    // write into our bit-buffer
+    {
+        std::lock_guard<std::mutex> lk(_bufferMutex);
+        _buffer.write(msg.bufferHandle, raw.data, raw.length);
+    }
+
+    // invoke user callback if registered
+    auto cb = _callbacks.find(raw.id);
+    if (cb != _callbacks.end()) {
+        cb->second(msg);
+    }
+
+    return true;
 }
