@@ -39,36 +39,37 @@ class Result {
     Result(bool error, std::string errorMessage) : _error(error), _errorMessage(errorMessage) {}
 };
 
-template <typename OnError, typename... Fs>
-bool check(OnError onError, Fs&&... functions) {
-    // check if any of the functions return an error
-    bool error = false;
-    std::vector<std::string> errors;
-    std::initializer_list<int>{(error |= functions.isError(), 0)...};
-    std::initializer_list<int>{(errors.push_back(functions.error()), 0)...};
 
-    if (error) {
-        // concatenate the error messages into one string
-        std::string errorMessage;
-        for (const std::string& error : errors) {
-            if (error.empty()) {
-                continue;
-            }
-            errorMessage += error;
-            errorMessage += "\n";
-        }
+// template <typename OnError, typename... Fs>
+// bool check(OnError onError, Fs&&... functions) {
+//     // check if any of the functions return an error
+//     bool error = false;
+//     std::vector<std::string> errors;
+//     std::initializer_list<int>{(error |= functions.isError(), 0)...};
+//     std::initializer_list<int>{(errors.push_back(functions.error()), 0)...};
 
-        onError(errorMessage.c_str());
+//     if (error) {
+//         // concatenate the error messages into one string
+//         std::string errorMessage;
+//         for (const std::string& error : errors) {
+//             if (error.empty()) {
+//                 continue;
+//             }
+//             errorMessage += error;
+//             errorMessage += "\n";
+//         }
 
-        return true;
-    }
+//         onError(errorMessage.c_str());
 
-    return false;
-}
+//         return true;
+//     }
 
-std::function<void(const char*)> defaultErrorCallback(std::ostream& stream) {
-    return [&stream](const char* error) { stream << "Error: " << error << std::endl; };
-}
+//     return false;
+// }
+
+// std::function<void(const char*)> defaultErrorCallback(std::ostream& stream) {
+//     return [&stream](const char* error) { stream << "Error: " << error << std::endl; };
+// }
 
 }  // namespace common
 

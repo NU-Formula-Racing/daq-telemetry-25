@@ -143,6 +143,10 @@ class CANBus {
     /// @param stream The stream to print it to
     void printBus(std::ostream& stream) const;
 
+    /// @brief Returns a const reference to the messages on the CAN Bus
+    /// @return A const reference to all the CANMessages
+    const std::unordered_map<uint32_t, std::unique_ptr<CANMessage>>& getMessages() const;
+
    private:
     // HAL
     CANDriver& _driver;

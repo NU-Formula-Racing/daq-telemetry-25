@@ -120,6 +120,10 @@ void CANBus::printBus(std::ostream& stream) const {
     stream << "*** BUS END ***" << std::endl;
 }
 
+const std::unordered_map<uint32_t, std::unique_ptr<CANMessage>>& CANBus::getMessages() const {
+    return _messages;
+}
+
 RawCANMessage CANBus::getRawMessage(const CANMessage& message) {
     RawCANMessage raw{};
     raw.id = message.id;
