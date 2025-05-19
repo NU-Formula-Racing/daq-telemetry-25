@@ -15,39 +15,46 @@ namespace can {
 using common::Option;
 using common::Result;
 
+// Global options
 const __OptionDescriptor TelemBuilder::_optionTable[] = {
-    {"logPeriodMs", OptionType::UINT16,
-     [](TelemetryOptions& o, const TokenData& d) {
-         o.logPeriodMs = static_cast<uint16_t>(d.intValue);
-     }},
-    {"wirelessPeriodMs", OptionType::UINT16, [](TelemetryOptions& o, const TokenData& d) {
+    {.name = "logPeriodMs",
+     .type = OptionType::UINT16,
+     .apply = [](TelemetryOptions& o,
+                 const TokenData& d) { o.logPeriodMs = static_cast<uint16_t>(d.intValue); }},
+    {.name = "wirelessPeriodMs",
+     .type = OptionType::UINT16,
+     .apply = [](TelemetryOptions& o, const TokenData& d) {
          o.wirelessPeriodMs = static_cast<uint16_t>(d.intValue);
      }}};
 
 // Fields in a message header: ID, size
 const __MessageFieldDescriptor TelemBuilder::_messageFieldTable[] = {
-    {OptionType::UINT32, false,
-     [](CANMessageDescription& m, const TokenData& d) {
-         m.id = static_cast<uint32_t>(d.uintValue);
-     }},
-    {OptionType::UINT16, false, [](CANMessageDescription& m, const TokenData& d) {
+    {.type = OptionType::UINT32,
+     .optional = false,
+     .apply = [](CANMessageDescription& m,
+                 const TokenData& d) { m.id = static_cast<uint32_t>(d.uintValue); }},
+    {.type = OptionType::UINT16,
+     .optional = false,
+     .apply = [](CANMessageDescription& m, const TokenData& d) {
          m.length = static_cast<uint8_t>(d.intValue);
      }}};
 
 // Fields in a signal line: startBit, length, factor, offset
 const __SignalFieldDescriptor TelemBuilder::_signalFieldTable[] = {
-    {OptionType::UINT16, false,
-     [](CANSignalDescription& s, const TokenData& d) {
-         s.startBit = static_cast<uint8_t>(d.intValue);
-     }},
-    {OptionType::UINT16, false,
-     [](CANSignalDescription& s, const TokenData& d) {
-         s.length = static_cast<uint8_t>(d.intValue);
-     }},
-    {OptionType::DOUBLE, false,
-     [](CANSignalDescription& s, const TokenData& d) { s.factor = d.floatValue; }},
-    {OptionType::DOUBLE, false,
-     [](CANSignalDescription& s, const TokenData& d) { s.offset = d.floatValue; }}};
+    {.type = OptionType::UINT16,
+     .optional = false,
+     .apply = [](CANSignalDescription& s,
+                 const TokenData& d) { s.startBit = static_cast<uint8_t>(d.intValue); }},
+    {.type = OptionType::UINT16,
+     .optional = false,
+     .apply = [](CANSignalDescription& s,
+                 const TokenData& d) { s.length = static_cast<uint8_t>(d.intValue); }},
+    {.type = OptionType::DOUBLE,
+     .optional = false,
+     .apply = [](CANSignalDescription& s, const TokenData& d) { s.factor = d.floatValue; }},
+    {.type = OptionType::DOUBLE,
+     .optional = false,
+     .apply = [](CANSignalDescription& s, const TokenData& d) { s.offset = d.floatValue; }}};
 
 Result<TelemetryOptions> TelemBuilder::build(CANBus& bus) {
     TelemetryOptions options;
