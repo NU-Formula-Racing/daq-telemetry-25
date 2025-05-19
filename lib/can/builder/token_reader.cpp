@@ -62,6 +62,20 @@ bool MockTokenReader::moveWord(size_t stepSize) {
     return true;
 }
 
+bool MockTokenReader::eatUntil(const char character) {
+    size_t n = _content.size();
+
+    while (_pos < n && _content[_pos] != character) {
+        ++_pos;
+    }
+    // if no more words
+    if (_pos >= n) {
+        return false;
+    }
+
+    return true;
+}
+
 void MockTokenReader::end() {
     _pos = _content.size();
 }

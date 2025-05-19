@@ -27,6 +27,11 @@ class TokenReader {
     /// @return true if the move succeeded (didn’t run out)
     virtual bool moveWord(std::size_t stepSize = 1) = 0;
 
+    /// @brief Advance the cursor until you encounter a given character
+    /// @param character The character to advance until
+    /// @return if the move succeeded
+    virtual bool eatUntil(const char character) = 0;
+
     /// @brief Finish/cleanup (e.g. close file)
     virtual void end() = 0;
 };
@@ -39,6 +44,7 @@ class MockTokenReader : public TokenReader {
     bool start() override;
     bool peekNextWord(std::size_t maxLength, char* charBuf, std::size_t* length) override;
     bool moveWord(std::size_t stepSize = 1) override;
+    bool eatUntil(const char character) override;
     void end() override;
 
    private:
@@ -56,6 +62,7 @@ class SDTokenReader : public TokenReader {
     bool start() override;
     bool peekNextWord(std::size_t maxLength, char* charBuf, std::size_t* length) override;
     bool moveWord(std::size_t stepSize = 1) override;
+    bool eatUntil(const char character) override;
     void end() override;
 
    private:

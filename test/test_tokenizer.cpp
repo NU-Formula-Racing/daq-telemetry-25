@@ -1,7 +1,8 @@
-#include "test.hpp"
 #include <builder/token_reader.hpp>
 #include <builder/tokenizer.hpp>
 #include <cmath>
+
+#include "test.hpp"
 
 using can::MockTokenReader;
 using can::Tokenizer;
@@ -84,7 +85,7 @@ void test_Tokenizer_Identifier() {
 
     auto id = tok.next().value();
     TEST_ASSERT_EQUAL_INT(TokenType::TT_IDENTIFIER, id.type);
-    
+
     TEST_ASSERT_FALSE(tok.next());
     tok.end();
 }

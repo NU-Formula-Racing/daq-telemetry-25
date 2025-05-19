@@ -55,7 +55,7 @@ common::Option<Token> Tokenizer::next() {
     while (true) {
         if (!_reader.peekNextWord(LOCAL_BUF_SIZE, buf, &len)) return common::Option<Token>::none();
         if (len > 0 && buf[0] == '#') {
-            _reader.moveWord();
+            _reader.eatUntil('\n');
             continue;
         }
         break;
