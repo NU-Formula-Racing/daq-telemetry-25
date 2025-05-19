@@ -13,6 +13,10 @@ struct BitBufferHandle {
     size_t offset;
 
     BitBufferHandle(size_t size, size_t offset) : size(size), offset(offset) {}
+
+    static BitBufferHandle none() {
+        return BitBufferHandle(0, 0);
+    }
 };
 
 class BitBuffer {
