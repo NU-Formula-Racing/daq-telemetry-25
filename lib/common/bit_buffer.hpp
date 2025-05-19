@@ -13,10 +13,6 @@ struct BitBufferHandle {
     size_t offset;
 
     BitBufferHandle(size_t size, size_t offset) : size(size), offset(offset) {}
-
-    static BitBufferHandle none() {
-        return BitBufferHandle(0, 0);
-    }
 };
 
 class BitBuffer {
@@ -26,14 +22,12 @@ class BitBuffer {
 
     static BitBuffer empty() { return BitBuffer(0); }
 
-    static void writeAtBitOffset(void* dest, const void* src, size_t size, size_t bitOffset);
-
     template <typename T>
     void write(BitBufferHandle handle, T value) {
         write(handle, &value, sizeof(T));
     }
 
-    void write(BitBufferHandle handle, const void* data, size_t size);
+    void write(BitBufferHandle handle, const void *data, size_t size);
 
     template <typename T>
     Option<T> read(BitBufferHandle handle) const {
@@ -45,14 +39,14 @@ class BitBuffer {
         }
     }
 
-    Option<void*> read(BitBufferHandle handle) const;
-    bool read(BitBufferHandle handle, void* data) const;
+    Option<void *> read(BitBufferHandle handle) const;
+    bool read(BitBufferHandle handle, void *data) const;
 
     size_t bitSize() const { return _bitSize; }
     size_t byteSize() const { return (_bitSize + 7) / 8; }
 
    private:
-    uint8_t* _buffer;
+    uint8_t *_buffer;
     size_t _bitSize;
 };
 
