@@ -42,6 +42,20 @@ void setup() {
     // interrupts();
     // REMOTE_DEBUG_PRINTLN("FIN SET SR");
 
+    // open up the file
+    FileGuard fg = Resources::file("test.txt", FILE_READ, true);
+    common::Option<fs::File> fileRes = fg.file();
+    // did we open up the file sucessfully?
+    if (fileRes.isNone()) {
+        REMOTE_DEBUG_PRINTLN("Unable to open the test file!!!");
+    } else {
+        fs::File file = fileRes.value();
+        const char *message = "hello!";
+        file.write((const uint8_t *)message, sizeof(message));
+    }
+    // lifetime automatically closes our file!
+    
+
     Resources::sched().start();
 }
 

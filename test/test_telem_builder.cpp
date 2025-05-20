@@ -25,11 +25,20 @@ class TestDriver : public CANDriver {};
 static bool buildBus(const char* cfg, TelemetryOptions& outOpts, CANBus& bus) {
     MockTokenReader reader(cfg);
     Tokenizer tok(reader);
+
     if (!tok.start()) return false;
+
     TelemBuilder builder(tok);
     auto res = builder.build(bus);
-    if (!res) return false;
+
+    if (res.isError()) {
+        std::cout << res.error();
+        return false;
+    }
+
     outOpts = res.value();
+
+    bus.printBus(std::cout);
     return true;
 }
 
@@ -107,7 +116,6 @@ void test_TelemBuilder_SignEndianOverride() {
     TEST_ASSERT_TRUE(sig.isSigned);
     TEST_ASSERT_EQUAL_INT(can::MSG_BIG_ENDIAN, sig.endianness);
 }
-
 
 TEST_FUNC(test_TelemBuilder_Simple);
 TEST_FUNC(test_TelemBuilder_OptionOverride);
