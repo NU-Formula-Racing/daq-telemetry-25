@@ -55,15 +55,15 @@ common::Option<fs::File> SDManager::open(const char* path, const char* mode, con
     }
 
     // push it onto our internal stack
-    _fileStack[_fileStackPtr++] = std::move(f);
-
-    // pop it right back off, and hand it back to the caller
-    TELEM_DEBUG_PRINTLN("Opened file %s", path);
-    fs::File result = std::move(_fileStack[--_fileStackPtr]);
-    return common::Option<fs::File>::some(std::move(result));
+    _fileStack[_fileStackPtr] = std::move(f);
+    TELEM_DEBUG_PRINTLN("Opened file %s, stack ptr %d", path, _fileStackPtr);
+    fs::File result = _fileStack[_fileStackPtr];
+    _fileStackPtr++;
+    return common::Option<fs::File>::some(result);
 }
 
 void SDManager::flush() {
+    TELEM_DEBUG_PRINTLN("Flushing file %d", _fileStackPtr - 1);
     if (_fileStackPtr > 0) {
         fs::File file = _fileStack[_fileStackPtr - 1];
         TELEM_DEBUG_PRINTLN("Flushed file %s", file.name());
@@ -72,8 +72,10 @@ void SDManager::flush() {
 }
 
 void SDManager::close() {
+    TELEM_DEBUG_PRINTLN("Closing file %d", _fileStackPtr - 1);
     if (_fileStackPtr > 0) {
-        fs::File file = _fileStack[--_fileStackPtr];
+        _fileStackPtr--;
+        fs::File file = _fileStack[_fileStackPtr];
         TELEM_DEBUG_PRINTLN("Closed file %s", file.name());
         file.close();
     }
@@ -81,21 +83,23 @@ void SDManager::close() {
 
 FileGuard::FileGuard(SDManager& manager, const char* path, const char* mode,
                      FileGaurdBehavior behavior, bool create)
-    : _status(FILE_BAD), _behavior(behavior) {
+    : _manager(manager), _status(FILE_BAD), _behavior(behavior) {
     // Ask the manager to open for us:
+    TELEM_DEBUG_PRINTLN("File Guard ctor");
     auto optFile = manager.open(path, mode, create);
-    if (optFile) {
-        _file = std::move(optFile.value());
+    if (optFile.isSome()) {
+        _file = optFile.value();
         _status = FILE_GOOD;
     }
 }
 
 FileGuard::~FileGuard() {
+    TELEM_DEBUG_PRINTLN("File Guard dtor");
     if (_status == FILE_GOOD) {
         if (_behavior == FGB_FLUSH_ON_DESTRUCTION) {
-            _file.flush();
+            _manager.flush();
         } else {
-            _file.close();
+            _manager.close();
         }
     }
 }
@@ -103,7 +107,7 @@ FileGuard::~FileGuard() {
 common::Option<fs::File> FileGuard::file() {
     if (_status == FILE_GOOD) {
         // Return a copy of the handle to the user
-        return common::Option<fs::File>::some(std::move(_file));
+        return common::Option<fs::File>::some(_file);
     }
     return common::Option<fs::File>::none();
 }

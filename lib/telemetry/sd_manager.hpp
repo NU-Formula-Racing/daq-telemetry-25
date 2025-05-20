@@ -54,6 +54,7 @@ class FileGuard {
     common::Option<fs::File> file();
 
    private:
+    SDManager& _manager;
     FileStatus _status;
     FileGaurdBehavior _behavior;
     fs::File _file;
