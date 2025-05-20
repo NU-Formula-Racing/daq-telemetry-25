@@ -43,7 +43,7 @@ void setup() {
     // REMOTE_DEBUG_PRINTLN("FIN SET SR");
 
     // open up the file
-    FileGuard fg = Resources::file("test.txt", FILE_READ, true);
+    FileGuard fg = Resources::file("/test.txt", FILE_READ, true);
     common::Option<fs::File> fileRes = fg.file();
     // did we open up the file sucessfully?
     if (fileRes.isNone()) {
@@ -56,7 +56,7 @@ void setup() {
     // lifetime automatically closes our file!
     
 
-    Resources::sched().start();
+    // Resources::sched().start();
 }
 
 void loop() {

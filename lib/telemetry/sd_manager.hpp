@@ -7,7 +7,6 @@
 #include <define.hpp>
 #include <map>
 #include <option.hpp>
-#include <resources.hpp>
 
 namespace remote {
 

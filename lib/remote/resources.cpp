@@ -1,7 +1,7 @@
 #include "resources.hpp"
 
+#include <SPI.h>
 #include <can.h>
-
 #include <can_drivers.hpp>
 #include <define.hpp>
 #include <sd_manager.hpp>
@@ -9,8 +9,11 @@
 
 using namespace remote;
 
+static SPIClass vspi(VSPI);
+static SPIClass hspi(HSPI);
+
 static const SDManagerConfig __SD_CONFIG = {
-    .spi = SPI,
+    .spi = hspi,
     .csPin = HWPin::LOGGER_SD_CS,
 };
 
