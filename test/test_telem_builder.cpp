@@ -62,8 +62,8 @@ void test_TelemBuilder_Simple() {
 
     const CANSignal& sig = msg.signals[0];
     TEST_ASSERT_EQUAL_UINT(8, sig.handle.size);
-    TEST_ASSERT_DOUBLE_WITHIN(1e-6, 2.0, sig.factor);
-    TEST_ASSERT_DOUBLE_WITHIN(1e-6, 1.0, sig.offset);
+    TEST_ASSERT_FLOAT_WITHIN(1e-6, 2.0, sig.factor);
+    TEST_ASSERT_FLOAT_WITHIN(1e-6, 1.0, sig.offset);
 }
 
 // Test: option override

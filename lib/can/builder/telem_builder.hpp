@@ -1,3 +1,4 @@
+// TelemBuilder.hpp
 #ifndef __TELEM_BUILDER_H__
 #define __TELEM_BUILDER_H__
 
@@ -6,10 +7,8 @@
 #include <vector>
 
 #include "can.hpp"
-#include "can_debug.hpp"
 #include "option.hpp"
 #include "result.hpp"
-#include "token_reader.hpp"
 #include "tokenizer.hpp"
 
 namespace can {
@@ -20,24 +19,20 @@ struct TelemetryOptions {
     uint16_t wirelessPeriodMs = 100;
 };
 
-/// @brief What kind of data an option holds
 enum class OptionType { UINT16, UINT32, FLOAT, DOUBLE, BOOL };
 
-/// @brief Describes one global option: its name, type, and how to apply it
 struct __OptionDescriptor {
     const char* name;
     OptionType type;
     std::function<void(TelemetryOptions&, const TokenData&)> apply;
 };
 
-/// @brief Describes how to parse one field from a message header
 struct __MessageFieldDescriptor {
     OptionType type;
     bool optional;
     std::function<void(CANMessageDescription&, const TokenData&)> apply;
 };
 
-/// @brief Describes how to parse one field from a signal line
 struct __SignalFieldDescriptor {
     OptionType type;
     bool optional;
@@ -48,7 +43,7 @@ class TelemBuilder {
    public:
     explicit TelemBuilder(Tokenizer& tokenizer) : _tokenizer(tokenizer) {}
 
-    /// Parse the entire DBC-like stream into CANBus messages and global options
+    /// Parses the entire stream, registers messages on `bus`, and returns global options.
     Result<TelemetryOptions> build(CANBus& bus);
 
    private:
@@ -58,12 +53,15 @@ class TelemBuilder {
     static const __MessageFieldDescriptor _messageFieldTable[];
     static const __SignalFieldDescriptor _signalFieldTable[];
 
-    // ------ helper parsers ------
+    // ——— Helpers ———
     Result<bool> _parseGlobalOption(TelemetryOptions& opts);
-    Result<CANMessageDescription> _parseMessage();
-    Result<CANSignalDescription> _parseSignal();
     Result<bool> _applyOptionByName(TelemetryOptions& opts, const std::string& name,
                                     const TokenData& data);
+    Result<bool> _parseBoard(CANBus& bus);
+    Result<CANMessageDescription> _parseMessage();
+    Result<bool> _validateMessage(const CANMessageDescription& msg);
+    Result<CANSignalDescription> _parseSignal();
+    Result<bool> _validateSignal(const CANSignalDescription& sig, size_t msgBits);
 };
 
 }  // namespace can
