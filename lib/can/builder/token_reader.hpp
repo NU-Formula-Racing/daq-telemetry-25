@@ -52,26 +52,6 @@ class MockTokenReader : public TokenReader {
     std::size_t _pos = 0;
 };
 
-#ifdef __PLATFORM_ESP32
-
-/// @brief SD-backed reader; slurps file on start()
-class SDTokenReader : public TokenReader {
-   public:
-    explicit SDTokenReader(const std::string& filename);
-
-    bool start() override;
-    bool peekNextWord(std::size_t maxLength, char* charBuf, std::size_t* length) override;
-    bool moveWord(std::size_t stepSize = 1) override;
-    bool eatUntil(const char character) override;
-    void end() override;
-
-   private:
-    std::string _filename;
-    std::size_t _pos = 0;
-};
-
-#endif  // __PLATFORM_ESP32
-
 }  // namespace can
 
 #endif  // __TOKEN_READER_H__
