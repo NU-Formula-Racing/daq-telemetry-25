@@ -2,12 +2,19 @@
 #define __TEST_H__
 
 #include <unity.h>
+#include <unity_internals.h>
 
 #include <define.hpp>
 #include <functional>
 #include <map>
 
 #include "test_debug.hpp"
+
+struct TestData {
+    const char* testName;
+    const char* testFile;
+    void (*testFunc)();
+};
 
 class Tests {
    public:
@@ -16,7 +23,9 @@ class Tests {
         return t;
     }
 
-    void addTest(const char* testName, void (*testFunc)()) { _registry[testName] = testFunc; }
+    void addTest(const char* testName, const char* testFile, void (*testFunc)()) {
+        _registry[testName] = {.testName = testName, .testFile = testFile, .testFunc = testFunc};
+    }
 
     void runTests() {
         UNITY_BEGIN();
@@ -25,7 +34,8 @@ class Tests {
 
         for (auto& test : _registry) {
             // TEST_DEBUG_PRINT("**** RUNNING TEST %s ****\n", test.first);
-            UnityDefaultTestRun(test.second, test.first, __LINE__);
+            UnitySetTestFile(test.second.testFile);
+            UnityDefaultTestRun(test.second.testFunc, test.first, __LINE__);
         }
 
         UNITY_END();
@@ -33,7 +43,7 @@ class Tests {
 
    private:
     Tests() {}
-    std::map<const char*, void (*)()> _registry;
+    std::map<const char*, TestData> _registry;
 };
 
 #define TEST_FUNC(func)                                        \
@@ -41,7 +51,7 @@ class Tests {
     struct __##func {                                          \
         __##func() {                                           \
             TEST_DEBUG_PRINT("Registering test: %s\n", #func); \
-            Tests::instance().addTest(#func, func);            \
+            Tests::instance().addTest(#func, __FILE__, func);  \
         }                                                      \
     };                                                         \
     static __##func __inst_##func;                             \
