@@ -128,7 +128,118 @@ void test_Tokenizer_SignalLine() {
     tok.end();
 };
 
+// Negative decimal integer
+void test_Tokenizer_NegativeInt() {
+    MockTokenReader reader("-123");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto t = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_INT, t.type);
+    TEST_ASSERT_EQUAL_INT(-123, t.data.intValue);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+// Negative floating‐point
+void test_Tokenizer_NegativeFloat() {
+    MockTokenReader reader("-3.5");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto t = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_FLOAT, t.type);
+    TEST_ASSERT(fabs(t.data.floatValue + 3.5) < 1e-6);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+// Upper‐ and lower‐case hex parsing
+void test_Tokenizer_HexCaseInsensitivity() {
+    MockTokenReader reader("0XFF 0xab");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto h1 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_HEX_INT, h1.type);
+    TEST_ASSERT_EQUAL_UINT(0xFF, h1.data.uintValue);
+
+    auto h2 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_HEX_INT, h2.type);
+    TEST_ASSERT_EQUAL_UINT(0xAB, h2.data.uintValue);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+// Scientific‐notation floats
+void test_Tokenizer_SciFloat() {
+    MockTokenReader reader("1e3 2E-2");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto f1 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_FLOAT, f1.type);
+    TEST_ASSERT(fabs(f1.data.floatValue - 1000.0) < 1e-6);
+
+    auto f2 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_FLOAT, f2.type);
+    TEST_ASSERT(fabs(f2.data.floatValue - 0.02) < 1e-6);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+// Alphanumeric identifier
+void test_Tokenizer_AlphaNumIdentifier() {
+    MockTokenReader reader("Signal123 _under_score1");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto s1 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_IDENTIFIER, s1.type);
+
+    auto s2 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_IDENTIFIER, s2.type);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+// Mixed whitespace and comments
+void test_Tokenizer_WhitespaceAndComments() {
+    MockTokenReader reader("   7\t\t8  #skip me\n   9 ");
+    Tokenizer tok(reader);
+    TEST_ASSERT(tok.start());
+
+    auto n1 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_INT, n1.type);
+    TEST_ASSERT_EQUAL_INT(7, n1.data.intValue);
+
+    auto n2 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_INT, n2.type);
+    TEST_ASSERT_EQUAL_INT(8, n2.data.intValue);
+
+    // skip comment, then next word
+    auto n3 = tok.next().value();
+    TEST_ASSERT_EQUAL_INT(TokenType::TT_INT, n3.type);
+    TEST_ASSERT_EQUAL_INT(9, n3.data.intValue);
+
+    TEST_ASSERT_FALSE(tok.next());
+    tok.end();
+}
+
+
+
 TEST_FUNC(test_Tokenizer_GlobalOption);
 TEST_FUNC(test_Tokenizer_BoardLine);
 TEST_FUNC(test_Tokenizer_MessageLine);
 TEST_FUNC(test_Tokenizer_SignalLine);
+TEST_FUNC(test_Tokenizer_NegativeInt);
+TEST_FUNC(test_Tokenizer_NegativeFloat);
+TEST_FUNC(test_Tokenizer_HexCaseInsensitivity);
+TEST_FUNC(test_Tokenizer_SciFloat);
+TEST_FUNC(test_Tokenizer_AlphaNumIdentifier);
+TEST_FUNC(test_Tokenizer_WhitespaceAndComments);
