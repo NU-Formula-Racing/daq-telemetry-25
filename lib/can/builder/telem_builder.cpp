@@ -72,6 +72,8 @@ Result<TelemetryOptions> TelemBuilder::build(CANBus& bus) {
     }
 
     // Phase 2: boards
+    _messageIDSet.clear();
+
     bool sawBoard = false;
     while (true) {
         Option<Token> p = _tokenizer.peek();
@@ -163,6 +165,11 @@ Result<bool> TelemBuilder::_parseBoard(CANBus& bus) {
         }
 
         bus.addMessage(desc);
+        if (_messageIDSet.find(desc.id) != _messageIDSet.end()) {
+            return Result<bool>::errorResult("duplicate message ID!");
+        }
+
+        _messageIDSet.insert(desc.id);
     }
 
     if (!hasMsg) {
@@ -309,7 +316,7 @@ Result<bool> TelemBuilder::_validateMessage(const CANMessageDescription& message
                   return a.startBit < b.startBit;
               });
 
-    uint8_t topBit = -1;
+    uint8_t topBit = 0;
     for (const CANSignalDescription& sig : sortedSignals) {
         if (sig.startBit < topBit) {
             return Result<bool>::errorResult("Overlapping Signals!");

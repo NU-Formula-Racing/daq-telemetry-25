@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "can.hpp"
 #include "option.hpp"
@@ -59,9 +60,11 @@ class TelemBuilder {
                                     const TokenData& data);
     Result<bool> _parseBoard(CANBus& bus);
     Result<CANMessageDescription> _parseMessage();
-    Result<bool> _validateMessage(const CANMessageDescription& msg);
     Result<CANSignalDescription> _parseSignal();
+    Result<bool> _validateMessage(const CANMessageDescription& msg);
     Result<bool> _validateSignal(const CANSignalDescription& sig, size_t msgBits);
+
+    std::set<uint16_t> _messageIDSet;
 };
 
 }  // namespace can

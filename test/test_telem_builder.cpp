@@ -4,7 +4,7 @@
 #include <can.hpp>
 #include <cmath>
 #include <cstring>
-
+#include "test_debug.hpp"
 #include "test.hpp"
 
 using can::CANBaudRate;
@@ -32,7 +32,7 @@ static bool buildBus(const char* cfg, TelemetryOptions& outOpts, CANBus& bus) {
     auto res = builder.build(bus);
 
     if (res.isError()) {
-        std::cout << res.error();
+        std::cout << res.error() << "\n";
         return false;
     }
 
