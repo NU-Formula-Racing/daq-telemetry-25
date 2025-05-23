@@ -1,11 +1,13 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
+#include <RTCLib.h>
 #include <SPI.h>
 
 #include <can.hpp>
 #include <can_drivers.hpp>
 #include <define.hpp>
+#include <sd_logger.hpp>
 #include <sd_manager.hpp>
 #include <tasks.hpp>
 
@@ -35,7 +37,6 @@ class Resources {
         return FileGuard(Resources::instance()._sdManager, path, mode,
                          FileGaurdBehavior::FGB_FLUSH_ON_DESTRUCTION, create);
     }
-    
 
    private:
     Resources();
@@ -48,6 +49,8 @@ class Resources {
     can::CANBus dataBus;
     can::CANBus driveBus;
     tasks::TaskScheduler scheduler;
+    RTC_PCF8523 rtc;
+    SDLogger logger{_sdManager, rtc};
 };
 
 }  // namespace remote

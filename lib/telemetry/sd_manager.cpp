@@ -112,4 +112,31 @@ common::Option<fs::File> FileGuard::file() {
     return common::Option<fs::File>::none();
 }
 
+void SDManager::createDir(const char* dir) {
+    // If it already exists, do nothing
+    if (!_sd.exists(dir)) {
+        if (!_sd.mkdir(dir)) {
+            _managerStatus = SD_BAD;
+        }
+    }
+}
+
+uint16_t SDManager::numFilesInDir(const char* dir) {
+    uint16_t count = 0;
+    fs::File d = _sd.open(dir);
+    if (!d || !d.isDirectory()) {
+        return 0;
+    }
+
+    // iterate through all entries
+    fs::File entry = d.openNextFile();
+    while (entry) {
+        ++count;
+        entry.close();
+        entry = d.openNextFile();
+    }
+    d.close();
+    return count;
+}
+
 }  // namespace remote
