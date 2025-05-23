@@ -12,11 +12,17 @@
 #include <task_sensors.hpp>
 #include <task_wireless.hpp>
 
+// can building
+#include <builder/builder.hpp>
+#include <sd_token_reader.hpp>
+
 using namespace tasks;
+using namespace common;
 
 namespace remote {
 
-void __setupTasks();
+static void __setupTasks();
+static void __setupConfig();
 
 void setup() {
     // begin serial
@@ -24,39 +30,7 @@ void setup() {
 
     REMOTE_DEBUG_PRINTLN("DAQ Telemetry Init!");
     __setupTasks();
-
-    // tie task ws to be the new CM_LED_CLK
-    // REMOTE_DEBUG_PRINTLN("Pin mode CM CLK");
-    // pinMode(HWPin::CM_LED_CLK, OUTPUT);
-    // REMOTE_DEBUG_PRINTLN("Pin mode SR DATA");
-    // pinMode(HWPin::SHIFT_REG_DATA, OUTPUT);
-
-    // REMOTE_DEBUG_PRINTLN("SET SR");
-    // noInterrupts();
-    // for (int i = 0; i < 12; i++) {
-    //     digitalWrite(HWPin::CM_LED_CLK, LOW);
-    //     uint8_t val = (i % 2 == 0) ? LOW : HIGH;
-    //     digitalWrite(HWPin::SHIFT_REG_DATA, val);
-    //     digitalWrite(HWPin::CM_LED_CLK, HIGH);
-    // }
-    // interrupts();
-    // REMOTE_DEBUG_PRINTLN("FIN SET SR");
-
-    // open up the file
-    FileGuard fg = Resources::file("/test.txt", FILE_WRITE, true);
-    common::Option<fs::File> fileRes = fg.file();
-    // did we open up the file sucessfully?
-    if (fileRes.isNone()) {
-        REMOTE_DEBUG_PRINTLN("Unable to open the test file!!!");
-    } else {
-        fs::File file = fileRes.value();
-        const char message[] = "hello!";
-        file.write((const uint8_t *)message, sizeof(message));
-    }
-    // lifetime automatically closes our file!
-    
-
-    // Resources::sched().start();
+    __setupConfig();
 }
 
 void loop() {
@@ -92,6 +66,32 @@ void __setupTasks() {
                                              .priority = TaskPriority::TP_HIGH,
                                              .core = ESPCore::ESPC_1},
                                TaskAction::make<WirelessTask>());
+}
+
+void __setupConfig() {
+    REMOTE_DEBUG_PRINTLN("Setting up configuration!");
+
+    uint32_t start = millis();
+
+    FileGuard gaurd = Resources::file("/config.telem", FILE_READ, false);
+    SDTokenReader reader(gaurd);
+    can::Tokenizer tokenizer(reader);
+    can::TelemBuilder builder(tokenizer);
+
+    REMOTE_DEBUG_PRINTLN("Building...");
+    Result<can::TelemetryOptions> telemOptRes = builder.build(Resources::drive());
+
+    if (telemOptRes.isError()) {
+        REMOTE_DEBUG_PRINTLN("%s", telemOptRes.error());
+    } else {
+        REMOTE_DEBUG_PRINTLN("Successfully configured!");
+    }
+
+    uint32_t time = millis() - start;
+
+    REMOTE_DEBUG_PRINTLN("Took %d ms", time);
+
+    Resources::drive().printBus(std::cout);
 }
 
 }  // namespace remote

@@ -1,9 +1,6 @@
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
 
-// debug flags
-#define DEBUG  // global debug flag
-#define CAN_DEBUG
 
 // different pins for applciations
 #if defined(APP_REMOTE)

@@ -12,7 +12,7 @@ namespace remote {
 /// @brief SD-backed reader; slurps file on start()
 class SDTokenReader : public can::TokenReader {
    public:
-    explicit SDTokenReader(const std::string& filename);
+    explicit SDTokenReader(FileGuard &guard);
 
     bool start() override;
     bool peekNextWord(std::size_t maxLength, char* charBuf, std::size_t* length) override;
@@ -21,7 +21,6 @@ class SDTokenReader : public can::TokenReader {
     void end() override;
 
    private:
-    std::string _filename;
     FileGuard _guard;
 };
 

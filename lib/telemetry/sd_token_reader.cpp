@@ -4,15 +4,13 @@
 #include <cctype>  // for std::isspace
 #include <cstddef>
 #include <cstdint>
-#include <resources.hpp>
 #include <sd_manager.hpp>
 #include <string>
 
 namespace remote {
 
-SDTokenReader::SDTokenReader(const std::string& filename)
-    : _filename(filename),
-      _guard(Resources::file(_filename.c_str(), FILE_READ, false))
+SDTokenReader::SDTokenReader(FileGuard &gaurd) :
+      _guard(gaurd)
 {}
 
 bool SDTokenReader::start() {
