@@ -170,6 +170,8 @@ class CANBus {
     bool writeRawMessage(const RawCANMessage raw);
 };
 
+/// @brief The actual representation of a CAN signal
+/// Tied to the CAN BitBuffer
 class CANSignal {
    public:
     const CANMessage& message;  // non-owning back-ref
@@ -199,6 +201,8 @@ class CANSignal {
     T getValue();
 };
 
+/// @brief The actual representation of a CAN message
+/// Tied to the CAN BitBuffer
 class CANMessage {
    public:
     CANBus& bus;  // parent bus
