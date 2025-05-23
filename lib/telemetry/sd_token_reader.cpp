@@ -1,17 +1,17 @@
 #include "sd_token_reader.hpp"
 
 #include <SD.h>
+
 #include <cctype>  // for std::isspace
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <sd_manager.hpp>
 #include <string>
 
 namespace remote {
 
-SDTokenReader::SDTokenReader(FileGuard &gaurd) :
-      _guard(gaurd)
-{}
+SDTokenReader::SDTokenReader(FileGuard& gaurd) : _guard(gaurd) {}
 
 bool SDTokenReader::start() {
     return true;
@@ -27,7 +27,6 @@ bool SDTokenReader::peekNextWord(std::size_t maxLength, char* charBuf, std::size
 
     // Remember where we were
     auto origPos = file.position();
-
     // Skip leading whitespace
     while (file.available()) {
         int c = file.peek();
@@ -45,9 +44,12 @@ bool SDTokenReader::peekNextWord(std::size_t maxLength, char* charBuf, std::size
 
     // Restore file position
     file.seek(origPos);
+    // set the null termnator
+    charBuf[len] = '\0';
 
     if (len == 0) return false;
     *length = len;
+
     return true;
 }
 
@@ -87,13 +89,14 @@ bool SDTokenReader::eatUntil(const char character) {
 
     while (file.available()) {
         char c = static_cast<char>(file.read());
-        if (c == character) return true;
+        if (c == character) {
+            return true;
+        }
     }
+
     return false;
 }
 
-void SDTokenReader::end() {
-    
-}
+void SDTokenReader::end() {}
 
 }  // namespace remote

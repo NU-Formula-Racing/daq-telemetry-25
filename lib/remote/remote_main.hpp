@@ -82,16 +82,15 @@ void __setupConfig() {
     Result<can::TelemetryOptions> telemOptRes = builder.build(Resources::drive());
 
     if (telemOptRes.isError()) {
-        REMOTE_DEBUG_PRINTLN("%s", telemOptRes.error());
+        REMOTE_DEBUG_PRINTLN("%s", telemOptRes.error().c_str());
     } else {
         REMOTE_DEBUG_PRINTLN("Successfully configured!");
     }
-
+    
     uint32_t time = millis() - start;
-
     REMOTE_DEBUG_PRINTLN("Took %d ms", time);
-
     Resources::drive().printBus(std::cout);
+
 }
 
 }  // namespace remote

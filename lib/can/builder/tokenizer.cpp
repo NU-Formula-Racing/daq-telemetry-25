@@ -74,7 +74,7 @@ common::Option<Token> Tokenizer::peek() {
 }
 
 bool Tokenizer::eatUntil(const char character) {
-    _reader.eatUntil(character);
+    return _reader.eatUntil(character);
 }
 
 common::Option<Token> Tokenizer::_interpWord(char* buf, std::size_t len) {

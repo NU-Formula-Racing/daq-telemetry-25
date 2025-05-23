@@ -7,6 +7,7 @@
 #include "option.hpp"
 #include "result.hpp"
 #include "tokenizer.hpp"
+#include "telemetry_debug.hpp"
 
 namespace can {
 
@@ -141,6 +142,11 @@ Result<bool> TelemBuilder::_parseBoard(CANBus& bus) {
     if (!nm.isSome() || nm.value().type != TokenType::TT_IDENTIFIER) {
         return Result<bool>::errorResult("expected board name after '>'");
     }
+    const char *boardName = IdentifierPool::instance().get(nm.value().data.idHandle);
+    TELEM_DEBUG_PRINTLN("Parsing board %s...", boardName);
+
+    // now move until the next line
+    _tokenizer.eatUntil('\n');
 
     // at least one message
     bool hasMsg = false;
@@ -188,6 +194,9 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         return Result<CANMessageDescription>::errorResult("expected message name");
     }
 
+    const char *messageName = IdentifierPool::instance().get(n.value().data.idHandle);
+    TELEM_DEBUG_PRINTLN("Parsing message %s...", messageName);
+
     // header fields via LUT
     for (std::size_t i = 0; i < sizeof(_messageFieldTable) / sizeof(_messageFieldTable[0]); ++i) {
         Option<Token> ft = _tokenizer.next();
@@ -206,6 +215,9 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         _messageFieldTable[i].apply(msgDesc, tok.data);
     }
     msgDesc.type = STANDARD;
+
+    // now move until the next line
+    _tokenizer.eatUntil('\n');
 
     // signals
     std::size_t msgBits = static_cast<std::size_t>(msgDesc.length) * 8;
