@@ -1,6 +1,7 @@
 #include "telem_builder.hpp"
 
 #include <cstring>
+#include <algorithm>
 
 #include "can.hpp"
 #include "option.hpp"
@@ -180,7 +181,6 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         return Result<CANMessageDescription>::errorResult("expected message name");
     }
 
-
     // header fields via LUT
     for (std::size_t i = 0; i < sizeof(_messageFieldTable) / sizeof(_messageFieldTable[0]); ++i) {
         Option<Token> ft = _tokenizer.next();
@@ -230,14 +230,6 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         return Result<CANMessageDescription>::errorResult("message without any signals");
     }
     return Result<CANMessageDescription>::ok(msgDesc);
-}
-
-Result<bool> TelemBuilder::_validateMessage(const CANMessageDescription& msg) {
-    if (msg.id > 0x7FF) {
-        return Result<bool>::errorResult("message ID out of 0x000–0x7FF");
-    }
-    // additional checks (duplicate names, etc.) go here
-    return Result<bool>::ok(true);
 }
 
 Result<CANSignalDescription> TelemBuilder::_parseSignal() {
@@ -295,12 +287,41 @@ Result<CANSignalDescription> TelemBuilder::_parseSignal() {
     return Result<CANSignalDescription>::ok(sigDesc);
 }
 
-// ─── Validate signal constraints (bit-fit, overlaps) ────────────────────────
+// Validate individual signals
 Result<bool> TelemBuilder::_validateSignal(const CANSignalDescription& sig, size_t msgBits) {
     if ((size_t)sig.startBit + (size_t)sig.length > msgBits) {
         return Result<bool>::errorResult("signal overruns message payload");
     }
-    // overlap checks would go here...
+
+    return Result<bool>::ok(true);
+}
+
+Result<bool> TelemBuilder::_validateMessage(const CANMessageDescription& message) {
+    if (message.id > 0x7FF) {
+        return Result<bool>::errorResult("message ID out of 0x000–0x7FF");
+    }
+
+    // check that non of the signals overlap
+    std::vector<CANSignalDescription> sortedSignals(message.signals);
+
+    std::sort(sortedSignals.begin(), sortedSignals.end(),
+              [](const CANSignalDescription& a, const CANSignalDescription& b) {
+                  return a.startBit < b.startBit;
+              });
+
+    uint8_t topBit = -1;
+    for (const CANSignalDescription& sig : sortedSignals) {
+        if (sig.startBit < topBit) {
+            return Result<bool>::errorResult("Overlapping Signals!");
+        }
+
+        topBit = sig.startBit + sig.length;
+    }
+
+    if (topBit > 64) {
+        return Result<bool>::errorResult("CAN Signal length is greater than 64!");
+    }
+
     return Result<bool>::ok(true);
 }
 
