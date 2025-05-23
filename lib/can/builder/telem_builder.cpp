@@ -180,6 +180,7 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         return Result<CANMessageDescription>::errorResult("expected message name");
     }
 
+
     // header fields via LUT
     for (std::size_t i = 0; i < sizeof(_messageFieldTable) / sizeof(_messageFieldTable[0]); ++i) {
         Option<Token> ft = _tokenizer.next();
