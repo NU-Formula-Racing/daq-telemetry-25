@@ -16,7 +16,6 @@ CANBus::~CANBus() {
 CANMessage& CANBus::addMessage(const CANMessageDescription& desc) {
     if (_isInitialized) {
         CAN_DEBUG_PRINT_ERROR("Cannot add messages after initialization.");
-        // handle error...
     }
 
     _nextBitOffset = ((_nextBitOffset + 7) / 8) * 8;
@@ -77,10 +76,22 @@ void CANBus::sendMessage(const CANMessage& message) {
 }
 
 void CANBus::update() {
-    RawCANMessage message;
-    if (!_driver.receiveMessage(&message)) return;
+    RawCANMessage rawMessage;
+    if (!_driver.receiveMessage(&rawMessage)) return;
 
-    // figure out what message it is, decode it, then store it in the buffer
+    if (_messages.find(rawMessage.id) == _messages.end())
+        return;  // we don't care about this message
+
+    std::unique_ptr<CANMessage>& message = _messages[rawMessage.id];
+
+    CAN_DEBUG_PRINTLN("Storing message at offset %llu \n", message->bufferHandle.offset);
+
+    // write it into the buffer
+    {
+        std::lock_guard<std::mutex> lk(_bufferMutex);
+        BitBufferHandle handle(64, message->bufferHandle.offset);
+        _buffer.write(handle, rawMessage.data64);
+    }
 }
 
 void CANBus::registerCallback(uint32_t messageID, std::function<void(const CANMessage&)> callback) {

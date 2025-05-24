@@ -99,7 +99,7 @@ Result<can::TelemetryOptions> __setupConfig() {
 
     uint32_t time = millis() - start;
     REMOTE_DEBUG_PRINTLN("Took %d ms", time);
-    // Resources::drive().printBus(std::cout);
+    Resources::drive().printBus(std::cout);
 
     Resources::drive().initialize();
 

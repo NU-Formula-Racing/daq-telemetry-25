@@ -73,6 +73,7 @@ class ESPCANDriver : public CANDriver {
             message->id = twaiMessage.identifier;
             message->length = twaiMessage.data_length_code;
             memcpy(message->data, twaiMessage.data, sizeof(message->data));
+            CAN_DEBUG_PRINT("Recieved message of id %d, length %d", message->id, message->length);
             return true;
         }
         return false;

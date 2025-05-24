@@ -15,7 +15,7 @@ namespace remote {
 
 enum LoggerState { LOGGER_BAD, LOGGER_GOOD };
 
-static std::vector<uint8_t> __HEADER = {'N', 'F', 'R', '2', '5', '1', '0', '0'};
+static std::vector<uint8_t> __HEADER = {'N', 'F', 'R', '2', '5', '1', '0', '0', '\n'};
 
 class SDLogger {
    public:
@@ -39,23 +39,41 @@ class SDLogger {
         ss << "/log_" << numFiles << ".daq";
         _filename = ss.str();
         REMOTE_DEBUG_PRINTLN("Logging to file %s", _filename.c_str());
-        // open the file
-        FileGuard guard(_manager, _filename.c_str(), FILE_WRITE, FGB_CLOSE_ON_DESTRUCTION, true);
 
-        common::Option<fs::File> fileOpt = guard.file();
-
-        if (fileOpt.isNone()) {
+        // open the file and create the header
+        FileGuard logGuard(_manager, _filename.c_str(), FILE_WRITE, FGB_CLOSE_ON_DESTRUCTION, true);
+        common::Option<fs::File> logFileOpt = logGuard.file();
+        if (logFileOpt.isNone()) {
             REMOTE_DEBUG_PRINT_ERRORLN("Unable to log! File can't be opened!");
             _state = LOGGER_BAD;
             return;
         }
 
+        fs::File logFile = logFileOpt.value();
+
         _state = LOGGER_GOOD;
 
-        // write the header
-        fs::File file = fileOpt.value();
+        // open the file and create the header
+        FileGuard configGuard(_manager,"/config.telem", FILE_READ, FGB_CLOSE_ON_DESTRUCTION, false);
+        common::Option<fs::File> configFileOpt = configGuard.file();
+        if (configFileOpt.isNone()) {
+            REMOTE_DEBUG_PRINT_ERRORLN("Unable to log! Config file can't be opened!");
+            _state = LOGGER_BAD;
+            return;
+        }
 
-        file.write(__HEADER.data(), __HEADER.size());
+        // write the header
+        fs::File configFile = configFileOpt.value();
+
+
+        logFile.write(__HEADER.data(), __HEADER.size());
+
+        // copy over the config file
+        uint8_t buf[128];
+        while (configFile.available()) {
+            size_t read = configFile.read(buf, 128);
+            logFile.write(buf, read);
+        }
     }
 
     void log(const can::CANBus& bus) {
