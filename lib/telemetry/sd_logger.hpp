@@ -31,9 +31,11 @@ class SDLogger {
 
         int numFiles = _manager.numFilesInDir(_dir.c_str());
 
-        ss << "/log_" << numFiles << ".telem";
+        ss << "/log_" << numFiles << ".daq";
         _filename = ss.str();
         REMOTE_DEBUG_PRINTLN("Logging to file %s", _filename.c_str());
+        // open the file
+        FileGuard guard(_manager, _filename.c_str(), FILE_WRITE, FGB_CLOSE_ON_DESTRUCTION, true);
     }
 
     void log() {
@@ -52,7 +54,7 @@ class SDLogger {
    private:
     std::string _dir;
     std::string _filename;
-    SDManager _manager;
+    SDManager &_manager;
     RTC_PCF8523& _rtc;
 };
 

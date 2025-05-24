@@ -25,7 +25,26 @@ void SDManager::initialize() {
 
 common::Option<fs::File> SDManager::open(const char* path, const char* mode, const bool create) {
     if (_managerStatus == SD_BAD) {
+        TELEM_DEBUG_PRINT_ERRORLN("Unable to open file %s! SDManager in a bad state!", path);
         return common::Option<fs::File>::none();
+    }
+
+    if (_fileStackPtr > 0) {
+        fs::File current = _fileStack[_fileStackPtr - 1];
+        if (strcmp(current.name(), path)) {
+            // this is the same file
+            TELEM_DEBUG_PRINTLN("Reusing the same file!");
+            // check if we need to reopen
+            if (current.availableForWrite() != 0 || current.available() != 0) {
+                // no need to reopen the guy
+                TELEM_DEBUG_PRINT_ERRORLN("No need to reopen!");
+                return common::Option<fs::File>::some(current);
+            } else {
+                // uhh we need to reopen this guy
+                _fileStackPtr--;
+            }
+            // otherwise we need to carry on with the rest of the logic
+        }
     }
 
     // optionally create the file if it doesn't exist
@@ -55,7 +74,7 @@ common::Option<fs::File> SDManager::open(const char* path, const char* mode, con
     }
 
     // push it onto our internal stack
-    _fileStack[_fileStackPtr] = std::move(f);
+    _fileStack[_fileStackPtr] = f;
     TELEM_DEBUG_PRINTLN("Opened file %s, stack ptr %d", path, _fileStackPtr);
     fs::File result = _fileStack[_fileStackPtr];
     _fileStackPtr++;
@@ -113,6 +132,11 @@ common::Option<fs::File> FileGuard::file() {
 }
 
 void SDManager::createDir(const char* dir) {
+    if (_managerStatus != SD_GOOD) {
+        TELEM_DEBUG_PRINT_ERRORLN("Unable to create dir %s! SDManager in a bad state!", dir);
+        return;
+    }
+
     // If it already exists, do nothing
     if (!_sd.exists(dir)) {
         if (!_sd.mkdir(dir)) {
@@ -122,6 +146,12 @@ void SDManager::createDir(const char* dir) {
 }
 
 uint16_t SDManager::numFilesInDir(const char* dir) {
+    if (_managerStatus != SD_GOOD) {
+        TELEM_DEBUG_PRINT_ERRORLN("Unable to count files in dir %s! SDManager in a bad state!",
+                                  dir);
+        return 0;
+    }
+
     uint16_t count = 0;
     fs::File d = _sd.open(dir);
     if (!d || !d.isDirectory()) {

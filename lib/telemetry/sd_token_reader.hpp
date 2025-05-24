@@ -21,7 +21,7 @@ class SDTokenReader : public can::TokenReader {
     void end() override;
 
    private:
-    FileGuard _guard;
+    FileGuard &_guard;
 };
 
 }  // namespace remote
