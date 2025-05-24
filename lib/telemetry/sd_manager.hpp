@@ -36,7 +36,6 @@ class SDManager {
     static constexpr std::size_t MAX_STACK_SIZE = 8;
 
     fs::SDFS _sd;
-    fs::File _openFile;
     SDManagerConfig _config;
     SDManagerStatus _managerStatus;
 

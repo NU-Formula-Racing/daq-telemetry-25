@@ -37,7 +37,7 @@ common::Option<fs::File> SDManager::open(const char* path, const char* mode, con
             // check if we need to reopen
             if (current.availableForWrite() != 0 || current.available() != 0) {
                 // no need to reopen the guy
-                TELEM_DEBUG_PRINT_ERRORLN("No need to reopen!");
+                TELEM_DEBUG_PRINTLN("No need to reopen!");
                 return common::Option<fs::File>::some(current);
             } else {
                 // uhh we need to reopen this guy

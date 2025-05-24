@@ -19,7 +19,7 @@ class Option {
     static Option<T> none() { return Option<T>(); }
 
     /// @brief Ctor
-    Option() : _hasValue(false) {}
+    Option() : _hasValue(false), _value(T()) {}
 
     /// @brief Equals operator
     Option<T> operator=(const Option<T>& other) {

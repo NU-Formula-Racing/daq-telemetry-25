@@ -17,7 +17,7 @@ class WirelessTask : public tasks::TaskAction {
 
     void run() {
         digitalWrite(HWPin::WLS_LORA_CS, LOW);
-        Resources::sched().delayMs(10);
+        // Resources::sched().delayMs(10);
         digitalWrite(HWPin::WLS_LORA_CS, HIGH);
     }
 
