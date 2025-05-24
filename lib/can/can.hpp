@@ -70,19 +70,19 @@ class CANDriver {
 
     virtual DriverType getDriverType() { return DT_NONE; }
 
-    virtual void install(CANBaudRate baudRate) { /* no-op */ }
-    virtual void uninstall() { /* no-op */ }
-    virtual void sendMessage(RawCANMessage& message) { /* no-op */ }
+    virtual void install(CANBaudRate baudRate) = 0;
+    virtual void uninstall() = 0;
+    virtual void sendMessage(const RawCANMessage& message) = 0;
 
     // message handling for interrupt-based drivers
     virtual void attachInterrupt(std::function<void(const CANMessage&)> callback) {
         // Default implementation does nothing.
     }
 
-    bool receiveMessage(RawCANMessage* res) { return false; }
+    virtual bool receiveMessage(RawCANMessage* res) = 0;
 
-    virtual void clearTransmitQueue() { /* no-op */ }
-    virtual void clearReceiveQueue() { /* no-op */ }
+    virtual void clearTransmitQueue() {}
+    virtual void clearReceiveQueue() {}
 };
 
 /// @brief A management class for CAN messages, abstracting over the DBC (provided by adding

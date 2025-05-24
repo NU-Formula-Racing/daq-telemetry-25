@@ -14,7 +14,7 @@ class CANTask : public tasks::TaskAction {
         digitalWrite(HWPin::CAN_DATA_MCP_CS, HIGH);
 
         Resources::drive().initialize();
-        Resources::data().initialize();
+        // Resources::data().initialize();
 
         return true;
     }
@@ -22,7 +22,7 @@ class CANTask : public tasks::TaskAction {
     void run() {
         digitalWrite(HWPin::CAN_DATA_MCP_CS, LOW);
         Resources::drive().update();
-        Resources::data().update();
+        // Resources::data().update();
         digitalWrite(HWPin::CAN_DATA_MCP_CS, HIGH);
     }
 

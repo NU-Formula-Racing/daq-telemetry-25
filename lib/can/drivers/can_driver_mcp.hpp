@@ -37,7 +37,7 @@ class MCPCanDriver : public CANDriver {
         _mcp.sendMessage(&frame);
     }
 
-    bool recieveMessage(RawCANMessage* message) {
+    bool receiveMessage(RawCANMessage* message) {
         can_frame frame;
         if (_mcp.readMessage(&frame) == MCP2515::ERROR_OK) {
             message->id = frame.can_id;
