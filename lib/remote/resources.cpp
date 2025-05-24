@@ -41,7 +41,4 @@ Resources::Resources()
         REMOTE_DEBUG_PRINTLN("RTC is NOT initialized, let's set the time!");
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
-
-    // initialize the SD Logger
-    logger.initialize();
 }

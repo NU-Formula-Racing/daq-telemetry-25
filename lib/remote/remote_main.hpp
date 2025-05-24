@@ -33,7 +33,8 @@ void setup() {
 
     if (optRes.isError()) {
         REMOTE_DEBUG_PRINT_ERROR("Unable to log! %s\n", optRes.error().c_str());
-        while (true) {}
+        while (true) {
+        }
     }
 
     __setupTasks(optRes.value());
@@ -47,12 +48,12 @@ void loop() {
 
 void __setupTasks(can::TelemetryOptions options) {
     REMOTE_DEBUG_PRINTLN("Adding tasks!");
-    Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
-                                             .intervalTime = 50,
-                                             .complexity = TaskComplexity::TC_HIGH,
-                                             .priority = TaskPriority::TP_NORMAL,
-                                             .core = ESPCore::ESPC_ANY},
-                               TaskAction::make<CANTask>());
+    // Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
+    //                                          .intervalTime = 50,
+    //                                          .complexity = TaskComplexity::TC_HIGH,
+    //                                          .priority = TaskPriority::TP_NORMAL,
+    //                                          .core = ESPCore::ESPC_ANY},
+    //                            TaskAction::make<CANTask>());
 
     // Resources::sched().addTask((TaskOptions){.name = "READ_SENSORS",
     //                                          .intervalTime = 100,
@@ -62,18 +63,19 @@ void __setupTasks(can::TelemetryOptions options) {
     //                            TaskAction::make<SensorsTask>());
 
     Resources::sched().addTask((TaskOptions){.name = "LOG",
-                                             .intervalTime = options.logPeriodMs,
+                                              .intervalTime = options.logPeriodMs,
+                                            //  .intervalTime = 1000,
                                              .complexity = TaskComplexity::TC_VERY_HIGH,
                                              .priority = TaskPriority::TP_HIGH,
                                              .core = ESPCore::ESPC_1},
                                TaskAction::make<LogTask>());
 
-    Resources::sched().addTask((TaskOptions){.name = "WIRELESS",
-                                             .intervalTime = options.wirelessPeriodMs,
-                                             .complexity = TaskComplexity::TC_VERY_HIGH,
-                                             .priority = TaskPriority::TP_HIGH,
-                                             .core = ESPCore::ESPC_1},
-                               TaskAction::make<WirelessTask>());
+    // Resources::sched().addTask((TaskOptions){.name = "WIRELESS",
+    //                                          .intervalTime = options.wirelessPeriodMs,
+    //                                          .complexity = TaskComplexity::TC_VERY_HIGH,
+    //                                          .priority = TaskPriority::TP_HIGH,
+    //                                          .core = ESPCore::ESPC_1},
+    //                            TaskAction::make<WirelessTask>());
 }
 
 Result<can::TelemetryOptions> __setupConfig() {
@@ -94,13 +96,14 @@ Result<can::TelemetryOptions> __setupConfig() {
     } else {
         REMOTE_DEBUG_PRINTLN("Successfully configured!");
     }
-    
+
     uint32_t time = millis() - start;
     REMOTE_DEBUG_PRINTLN("Took %d ms", time);
     // Resources::drive().printBus(std::cout);
 
-    return telemOptRes;
+    Resources::drive().initialize();
 
+    return telemOptRes;
 }
 
 }  // namespace remote

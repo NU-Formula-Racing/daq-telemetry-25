@@ -76,12 +76,13 @@ class SDLogger {
         fs::File file = fileOpt.value();
 
         // go to the end of the file
+        file.seek(file.size());
+
         std::size_t size;
         const uint8_t* buffer = bus.dataBuffer(&size);
-        REMOTE_DEBUG_PRINTLN("Writing %d bytes!", size);
-        file.write(buffer, size);
-        REMOTE_DEBUG_PRINTLN("File is %d bytes!", file.size());
-        file.flush();
+        std::size_t actualSize = file.write(buffer, size);
+        REMOTE_DEBUG_PRINTLN("Attempted to write %d bytes. Wrote %d bytes.", size, actualSize);
+        REMOTE_DEBUG_PRINTLN("File is %lld bytes!", file.size());
     }
 
    private:
