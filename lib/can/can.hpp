@@ -147,6 +147,11 @@ class CANBus {
     /// @return A const reference to all the CANMessages
     const std::unordered_map<uint32_t, std::unique_ptr<CANMessage>>& getMessages() const;
 
+    const uint8_t *dataBuffer(std::size_t *size) const { 
+        *size = _buffer.byteSize();
+        return _buffer.buffer();
+    }
+
    private:
     // HAL
     CANDriver& _driver;

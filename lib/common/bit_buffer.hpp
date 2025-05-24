@@ -72,6 +72,8 @@ class BitBuffer {
     /// @return The size of the internal buffer, in bytes
     size_t byteSize() const { return (_bitSize + 7) / 8; }
 
+    const uint8_t* buffer() const { return _buffer; }
+
    private:
     uint8_t* _buffer;
     size_t _bitSize;

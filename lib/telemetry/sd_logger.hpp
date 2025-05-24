@@ -38,7 +38,7 @@ class SDLogger {
         FileGuard guard(_manager, _filename.c_str(), FILE_WRITE, FGB_CLOSE_ON_DESTRUCTION, true);
     }
 
-    void log() {
+    void log(const can::CANBus &bus) {
         FileGuard guard(_manager, _filename.c_str(), FILE_WRITE, FGB_FLUSH_ON_DESTRUCTION, true);
 
         common::Option<fs::File> fileOpt = guard.file();
@@ -49,6 +49,12 @@ class SDLogger {
         }
 
         fs::File file = fileOpt.value();
+
+        // go to the end of the file
+        std::size_t size;
+        const uint8_t *buffer = bus.dataBuffer(&size);
+        REMOTE_DEBUG_PRINTLN("Writing %d bytes!", size);
+        file.write(buffer, size);
     }
 
    private:
