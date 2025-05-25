@@ -49,10 +49,10 @@ void loop() {
 void __setupTasks(can::TelemetryOptions options) {
     REMOTE_DEBUG_PRINTLN("Adding tasks!");
     Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
-                                             .intervalTime = 50,
-                                             .complexity = TaskComplexity::TC_HIGH,
-                                             .priority = TaskPriority::TP_NORMAL,
-                                             .core = ESPCore::ESPC_ANY},
+                                             .intervalTime = 10,
+                                             .complexity = TaskComplexity::TC_STANDARD,
+                                             .priority = TaskPriority::TP_CRITICAL,
+                                             .core = ESPCore::ESPC_0},
                                TaskAction::make<CANTask>());
 
     // Resources::sched().addTask((TaskOptions){.name = "READ_SENSORS",
@@ -62,13 +62,12 @@ void __setupTasks(can::TelemetryOptions options) {
     //                                          .core = ESPCore::ESPC_1},
     //                            TaskAction::make<SensorsTask>());
 
-    // Resources::sched().addTask((TaskOptions){.name = "LOG",
-    //                                           .intervalTime = options.logPeriodMs,
-    //                                         //  .intervalTime = 1000,
-    //                                          .complexity = TaskComplexity::TC_VERY_HIGH,
-    //                                          .priority = TaskPriority::TP_HIGH,
-    //                                          .core = ESPCore::ESPC_1},
-                            //    TaskAction::make<LogTask>());
+    Resources::sched().addTask((TaskOptions){.name = "LOG",
+                                              .intervalTime = options.logPeriodMs,
+                                             .complexity = TaskComplexity::TC_HIGH,
+                                             .priority = TaskPriority::TP_HIGH,
+                                             .core = ESPCore::ESPC_1},
+                               TaskAction::make<LogTask>());
 
     // Resources::sched().addTask((TaskOptions){.name = "WIRELESS",
     //                                          .intervalTime = options.wirelessPeriodMs,

@@ -16,7 +16,7 @@ namespace can {
 
 /// @brief All of the global telemetry options we support
 struct TelemetryOptions {
-    uint16_t logPeriodMs = 50;
+    uint16_t logPeriodMs = 100;
     uint16_t wirelessPeriodMs = 100;
 };
 

@@ -8,6 +8,8 @@
 #include <option.hpp>
 #include <sd_manager.hpp>
 #include <sstream>
+#include <mutex>
+#include <iomanip>
 
 #include "remote_debug.hpp"
 
@@ -54,7 +56,8 @@ class SDLogger {
         _state = LOGGER_GOOD;
 
         // open the file and create the header
-        FileGuard configGuard(_manager,"/config.telem", FILE_READ, FGB_CLOSE_ON_DESTRUCTION, false);
+        FileGuard configGuard(_manager, "/config.telem", FILE_READ, FGB_CLOSE_ON_DESTRUCTION,
+                              false);
         common::Option<fs::File> configFileOpt = configGuard.file();
         if (configFileOpt.isNone()) {
             REMOTE_DEBUG_PRINT_ERRORLN("Unable to log! Config file can't be opened!");
@@ -64,7 +67,6 @@ class SDLogger {
 
         // write the header
         fs::File configFile = configFileOpt.value();
-
 
         logFile.write(__HEADER.data(), __HEADER.size());
 
@@ -76,7 +78,7 @@ class SDLogger {
         }
     }
 
-    void log(const can::CANBus& bus) {
+    void log(can::CANBus& bus) {
         if (_state == LOGGER_BAD) {
             REMOTE_DEBUG_PRINT_ERRORLN("Unable to log! Logger state is bad!");
         }
@@ -96,11 +98,22 @@ class SDLogger {
         // go to the end of the file
         file.seek(file.size());
 
-        std::size_t size;
-        const uint8_t* buffer = bus.dataBuffer(&size);
-        std::size_t actualSize = file.write(buffer, size);
-        REMOTE_DEBUG_PRINTLN("Attempted to write %d bytes. Wrote %d bytes.", size, actualSize);
-        REMOTE_DEBUG_PRINTLN("File is %lld bytes!", file.size());
+        // write the time
+        uint32_t time = millis();
+
+        file.write((uint8_t*)(&time), sizeof(uint32_t));
+
+        uint32_t unixTime = _rtc.now().unixtime();
+
+        file.write((uint8_t*)(&unixTime), sizeof(uint32_t));
+        {
+            std::lock_guard<std::mutex>(bus.bufMutex());
+            std::size_t size;
+            const uint8_t* buffer = bus.dataBuffer(&size);
+            std::size_t actualSize = file.write(buffer, size);
+            REMOTE_DEBUG_PRINTLN("Attempted to write %d bytes. Wrote %d bytes.", size, actualSize);
+            REMOTE_DEBUG_PRINTLN("File is %lld bytes!", file.size());
+        }
     }
 
    private:

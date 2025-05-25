@@ -32,7 +32,10 @@ enum TaskComplexity : configSTACK_DEPTH_TYPE {
     TC_HIGH = configMINIMAL_STACK_SIZE * 4,  // ~3 072 words (~12 KiB)
 
     // really heavy: wireless stacks, big static buffers
-    TC_VERY_HIGH = configMINIMAL_STACK_SIZE * 8  // ~6 144 words (~24 KiB)
+    TC_VERY_HIGH = configMINIMAL_STACK_SIZE * 8,  // ~6 144 words (~24 KiB)
+
+    // really heavy: wireless stacks, big static buffers
+    TC_EXTREME = configMINIMAL_STACK_SIZE * 10  // ~6 144 words (~24 KiB)
 };
 
 enum TaskPriority : UBaseType_t {
