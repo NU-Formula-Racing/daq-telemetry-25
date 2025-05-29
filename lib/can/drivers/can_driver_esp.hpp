@@ -29,7 +29,6 @@ class ESPCANDriver : public CANDriver {
         _timingConfig = selectTiming(baudRate);
         _filterConfig = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
-
         twai_driver_install(&_genConfig, &_timingConfig, &_filterConfig);
         twai_start();
         CAN_DEBUG_PRINTLN("Installed ESP32 CAN driver!");
@@ -62,11 +61,10 @@ class ESPCANDriver : public CANDriver {
     }
 
     void tick() {
-        // fetch status
+        // fetch status and handle bus-off / stopped
         twai_status_info_t status;
         twai_get_status_info(&status);
 
-        // bus-off recovery / auto-restart
         if (status.state == TWAI_STATE_BUS_OFF) {
             twai_initiate_recovery();
             CAN_DEBUG_PRINTLN("TWAI bus off—initiating recovery");
@@ -76,21 +74,28 @@ class ESPCANDriver : public CANDriver {
             CAN_DEBUG_PRINTLN("TWAI was stopped—restarting");
         }
 
-        // drain all pending HW messages
+        // if no hardware messages pending, sleep a bit and return
+        if (status.msgs_to_rx == 0) {
+            // let the idle task run (and service the watchdog)
+            vTaskDelay(pdMS_TO_TICKS(10));
+            return;
+        }
+
+        // otherwise drain everything in the HW queue
         while (status.msgs_to_rx > 0) {
             if (status.rx_missed_count > 0) {
                 CAN_DEBUG_PRINT_ERRORLN("Missed %u CAN msgs due to full HW queue",
-                                  status.rx_missed_count);
+                                        status.rx_missed_count);
             }
 
             twai_message_t hwMsg;
-            if (twai_receive(&hwMsg, (TickType_t)100) == ESP_OK) {
+            // non-blocking receive, since we know msgs_to_rx > 0
+            if (twai_receive(&hwMsg, 0) == ESP_OK) {
                 RawCANMessage raw;
                 raw.id = hwMsg.identifier;
                 raw.length = hwMsg.data_length_code;
-                memcpy(raw.data, hwMsg.data, hwMsg.data_length_code);
+                memcpy(raw.data, hwMsg.data, raw.length);
 
-                // enqueue into our circular buffer
                 if (_rxCount < RX_BUFFER_SIZE) {
                     _rxBuf[_rxHead] = raw;
                     _rxHead = (_rxHead + 1) % RX_BUFFER_SIZE;
@@ -99,7 +104,7 @@ class ESPCANDriver : public CANDriver {
                     CAN_DEBUG_PRINT_ERRORLN("RX buffer full, dropping incoming message");
                 }
 
-                CAN_DEBUG_PRINTLN("Tick: received id=%u len=%u", raw.id, raw.length);
+                CAN_DEBUG_PRINTLN("Tick: received id=%d len=%d", raw.id, raw.length);
             } else {
                 CAN_DEBUG_PRINT_ERRORLN("Failed to read message from TWAI queue");
             }

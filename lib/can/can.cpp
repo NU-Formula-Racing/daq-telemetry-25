@@ -78,28 +78,20 @@ void CANBus::sendMessage(const CANMessage& message) {
 
 void CANBus::update() {
     RawCANMessage rawMessage;
-    uint8_t numRx;
 
-    while (_driver.receiveMessage(&rawMessage)) {
-        numRx++;
-        if (_messages.find(rawMessage.id) == _messages.end())
-            continue;  // we don't care about this message
+    bool recieved = _driver.receiveMessage(&rawMessage);
+    if (_messages.find(rawMessage.id) == _messages.end())
+        return;  // we don't care about this message
 
-        std::unique_ptr<CANMessage>& message = _messages[rawMessage.id];
+    std::unique_ptr<CANMessage>& message = _messages[rawMessage.id];
 
-        CAN_DEBUG_PRINTLN("Storing message at offset %llu \n", message->bufferHandle.offset);
+    CAN_DEBUG_PRINTLN("Storing message at offset %d \n", message->bufferHandle.offset);
 
-        // write it into the buffer
-        {
-            std::lock_guard<std::mutex> lk(_bufferMutex);
-            BitBufferHandle handle(64, message->bufferHandle.offset);
-            _buffer.write(handle, rawMessage.data64);
-        }
-
-
-        if (numRx > 10) {
-            CAN_DEBUG_PRINT_ERRORLN("Breaking early from update!");
-        }
+    // write it into the buffer
+    {
+        std::lock_guard<std::mutex> lk(_bufferMutex);
+        BitBufferHandle handle(64, message->bufferHandle.offset);
+        _buffer.write(handle, rawMessage.data64);
     }
 }
 

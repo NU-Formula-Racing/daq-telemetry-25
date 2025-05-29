@@ -18,7 +18,9 @@ BitBuffer::~BitBuffer() {
 void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
     // write to the buffer at the specified offset
     // check that we can actually write the full size of the data
-    if (handle.offset + size > _bitSize) {
+    // UTIL_DEBUG_PRINTLN("BitBuffer::write from %d to %d bits, length %d", handle.offset, handle.offset + handle.size, bitSize());
+
+    if (handle.offset + handle.size > _bitSize) {
         UTIL_DEBUG_PRINT_ERROR("Cannot write to buffer, not enough space.");
         return;
     }

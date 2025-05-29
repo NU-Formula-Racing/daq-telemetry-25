@@ -50,7 +50,7 @@ void __setupTasks(can::TelemetryOptions options) {
     REMOTE_DEBUG_PRINTLN("Adding tasks!");
     Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
                                              .intervalTime = 10,
-                                             .complexity = TaskComplexity::TC_STANDARD,
+                                             .complexity = TaskComplexity::TC_EXTREME,
                                              .priority = TaskPriority::TP_CRITICAL,
                                              .core = ESPCore::ESPC_0},
                                TaskAction::make<CANTask>());
