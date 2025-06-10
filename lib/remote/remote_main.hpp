@@ -48,25 +48,12 @@ void loop() {
 
 void __setupTasks(can::TelemetryOptions options) {
     REMOTE_DEBUG_PRINTLN("Adding tasks!");
-    Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
-                                             .intervalTime = 5,
-                                             .complexity = TaskComplexity::TC_EXTREME,
-                                             .priority = TaskPriority::TP_CRITICAL,
-                                             .core = ESPCore::ESPC_0},
-                               TaskAction::make<CANTask>());
-
-    // Resources::sched().addTask((TaskOptions){.name = "READ_SENSORS",
-    //                                          .intervalTime = 100,
-    //                                          .complexity = TaskComplexity::TC_HIGH,
-    //                                          .priority = TaskPriority::TP_LOW,
-    //                                          .core = ESPCore::ESPC_1},
-    //                            TaskAction::make<SensorsTask>());
 
     Resources::sched().addTask((TaskOptions){.name = "LOG",
                                              .intervalTime = options.logPeriodMs,
                                              .complexity = TaskComplexity::TC_HIGH,
                                              .priority = TaskPriority::TP_HIGH,
-                                             .core = ESPCore::ESPC_1},
+                                             .core = ESPCore::ESPC_0},
                                TaskAction::make<LogTask>());
 
     // Resources::sched().addTask((TaskOptions){.name = "WIRELESS",
@@ -75,8 +62,14 @@ void __setupTasks(can::TelemetryOptions options) {
     //                                          .priority = TaskPriority::TP_HIGH,
     //                                          .core = ESPCore::ESPC_1},
     //                            TaskAction::make<WirelessTask>());
-}
 
+    Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
+                                             .intervalTime = 5,
+                                             .complexity = TaskComplexity::TC_EXTREME,
+                                             .priority = TaskPriority::TP_CRITICAL,
+                                             .core = ESPCore::ESPC_1},
+                               TaskAction::make<CANTask>());
+}
 
 Result<can::TelemetryOptions> __setupConfig() {
     REMOTE_DEBUG_PRINTLN("Setting up configuration!");

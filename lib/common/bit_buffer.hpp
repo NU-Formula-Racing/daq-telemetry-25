@@ -23,6 +23,7 @@ class BitBuffer {
     ~BitBuffer();
 
     static BitBuffer empty() { return BitBuffer(0); }
+    static constexpr uint8_t __offsetHack = 48;
 
     /// @brief Write a value into the BitBuffer of an arbitrary type
     /// @tparam T The type of the value
@@ -72,7 +73,7 @@ class BitBuffer {
     /// @return The size of the internal buffer, in bytes
     size_t byteSize() const { return (_bitSize + 7) / 8; }
 
-    const uint8_t* buffer() const { return _buffer; }
+    const uint8_t* buffer() const { return &_buffer[BitBuffer::__offsetHack]; }
 
    private:
     uint8_t* _buffer;

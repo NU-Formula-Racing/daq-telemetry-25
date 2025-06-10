@@ -3,10 +3,13 @@
 #include <cstring>
 #include <util_debug.hpp>
 
+#include <freertos/FreeRTOS.h>
+
 using namespace common;
 
 BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
     size_t byteCount = (_bitSize + 7) >> 3;
+    byteCount += BitBuffer::__offsetHack;
     _buffer = new uint8_t[byteCount];
     std::memset(_buffer, 0, byteCount);
 }
@@ -22,19 +25,20 @@ void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
     // handle.offset + handle.size, bitSize());
 
     if (handle.offset + handle.size > _bitSize) {
-        UTIL_DEBUG_PRINT_ERROR("Cannot write to buffer, not enough space.");
+        UTIL_DEBUG_PRINT_ERRORLN("Cannot write to buffer, not enough space.");
         return;
     }
 
     size_t byteOffset = handle.offset / 8;
+    byteOffset += BitBuffer::__offsetHack;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
 
     const uint8_t* src = reinterpret_cast<const uint8_t*>(data);
     uint8_t* dst = &_buffer[byteOffset];
 
-    UTIL_DEBUG_PRINT("Writing byte offset %d, bit offset %d, bit size %d\n", byteOffset, handle.offset,
-                     handle.size);
+    // UTIL_DEBUG_PRINT("Writing byte offset %d, bit offset %d, bit size %d\n", byteOffset, handle.offset,
+    //                  handle.size);
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
     if (bitOffset == 0) {
@@ -67,6 +71,7 @@ bool BitBuffer::read(BitBufferHandle handle, void* data) const {
     }
 
     size_t byteOffset = handle.offset >> 3;
+    byteOffset += BitBuffer::__offsetHack;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
     size_t size = handle.size;

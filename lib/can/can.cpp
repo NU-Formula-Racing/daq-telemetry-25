@@ -61,10 +61,7 @@ void CANBus::initialize() {
     this->_driver.install(this->_baudRate);
 
     // calculate the amount of bits that we need for the CANSignal
-    size_t totalBits = 0;
-    for (auto& msg : _messages) {
-        totalBits += msg.second->length * 8;
-    }
+    size_t totalBits = _nextBitOffset;
 
     CAN_DEBUG_PRINT("Allocating buffer of size %d for CAN!\n", totalBits);
     this->_buffer = BitBuffer(totalBits);
@@ -87,7 +84,7 @@ void CANBus::update() {
 
         std::unique_ptr<CANMessage>& message = _messages[rawMessage.id];
 
-        CAN_DEBUG_PRINTLN("Storing message at offset %d", message->bufferHandle.offset);
+        // CAN_DEBUG_PRINTLN("Storing message at offset %d", message->bufferHandle.offset);
 
         // write it into the buffer
         {
