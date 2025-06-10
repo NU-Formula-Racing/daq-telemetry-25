@@ -9,7 +9,8 @@
 
 namespace common {
 
-/// @brief A class reprsenting the result of a function, used for operations where you can fail, and care about an error message
+/// @brief A class reprsenting the result of a function, used for operations where you can fail, and
+/// care about an error message
 /// @tparam T The type of the the value
 template <typename T>
 class Result {
@@ -23,13 +24,13 @@ class Result {
     /// @param errorMessage The error message
     /// @return The result with an error message
     static Result<T> errorResult(std::string errorMessage) { return Result<T>(true, errorMessage); }
-    
+
     /// @brief Ctor
     Result() : _error(true) {}
-    
+
     /// @brief Cast to bool
     operator bool() const { return !_error; }
-    
+
     /// @brief Equals operator
     Result<T> operator=(const Result<T>& other) {
         _value = other._value;
@@ -58,7 +59,6 @@ class Result {
     Result(T value) : _value(value), _error(false), _errorMessage("") {}
     Result(bool error, std::string errorMessage) : _error(error), _errorMessage(errorMessage) {}
 };
-
 
 // template <typename OnError, typename... Fs>
 // bool check(OnError onError, Fs&&... functions) {

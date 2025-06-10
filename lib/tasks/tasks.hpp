@@ -36,7 +36,7 @@ enum TaskComplexity : configSTACK_DEPTH_TYPE {
     TC_VERY_HIGH = configMINIMAL_STACK_SIZE * 8,  // ~6 144 words (~24 KiB)
 
     // really heavy: wireless stacks, big static buffers
-    TC_EXTREME = configMINIMAL_STACK_SIZE * 20  // ~6 144 words (~24 KiB)
+    TC_EXTREME = configMINIMAL_STACK_SIZE * 12  // ~6 144 words (~24 KiB)
 };
 
 enum TaskPriority : UBaseType_t {
@@ -133,10 +133,10 @@ class TaskScheduler {
                     const TickType_t period = pdMS_TO_TICKS(desc->options.intervalTime);
 
                     for (;;) {
-                        TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
+                        // TASKS_DEBUG_PRINT("Running task %s\n", desc->options.name);
                         desc->action->run();
-                        UBaseType_t hwm = uxTaskGetStackHighWaterMark(nullptr);
-                        UTIL_DEBUG_PRINT("%s task high water (words): %u\n", desc->options.name, hwm);
+                        // UBaseType_t hwm = uxTaskGetStackHighWaterMark(nullptr);
+                        // UTIL_DEBUG_PRINT("%s task high water (words): %u\n", desc->options.name, hwm);
 
                         // <- This _blocks_ the task until exactly 'period' has elapsed since
                         // lastWake

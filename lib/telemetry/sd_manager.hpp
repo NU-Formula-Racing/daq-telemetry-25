@@ -29,8 +29,8 @@ class SDManager {
     void initialize();
     friend class FileGuard;
 
-    void createDir(const char *dir);
-    uint16_t numFilesInDir(const char *dir);
+    void createDir(const char* dir);
+    uint16_t numFilesInDir(const char* dir);
 
    private:
     static constexpr std::size_t MAX_STACK_SIZE = 8;
@@ -45,8 +45,6 @@ class SDManager {
     common::Option<fs::File> open(const char* path, const char* mode, const bool create = false);
     void flush();
     void close();
-
-
 };
 
 class FileGuard {

@@ -49,7 +49,7 @@ void loop() {
 void __setupTasks(can::TelemetryOptions options) {
     REMOTE_DEBUG_PRINTLN("Adding tasks!");
     Resources::sched().addTask((TaskOptions){.name = "READ_CAN",
-                                             .intervalTime = 10,
+                                             .intervalTime = 5,
                                              .complexity = TaskComplexity::TC_EXTREME,
                                              .priority = TaskPriority::TP_CRITICAL,
                                              .core = ESPCore::ESPC_0},
@@ -63,7 +63,7 @@ void __setupTasks(can::TelemetryOptions options) {
     //                            TaskAction::make<SensorsTask>());
 
     Resources::sched().addTask((TaskOptions){.name = "LOG",
-                                              .intervalTime = options.logPeriodMs,
+                                             .intervalTime = options.logPeriodMs,
                                              .complexity = TaskComplexity::TC_HIGH,
                                              .priority = TaskPriority::TP_HIGH,
                                              .core = ESPCore::ESPC_1},
@@ -77,13 +77,14 @@ void __setupTasks(can::TelemetryOptions options) {
     //                            TaskAction::make<WirelessTask>());
 }
 
+
 Result<can::TelemetryOptions> __setupConfig() {
     REMOTE_DEBUG_PRINTLN("Setting up configuration!");
 
     uint32_t start = millis();
 
-    FileGuard gaurd = Resources::file("/config.telem", FILE_READ, false);
-    SDTokenReader reader(gaurd);
+    FileGuard guard = Resources::file("/config.telem", FILE_READ, false);
+    SDTokenReader reader(guard);
     can::Tokenizer tokenizer(reader);
     can::TelemBuilder builder(tokenizer);
 

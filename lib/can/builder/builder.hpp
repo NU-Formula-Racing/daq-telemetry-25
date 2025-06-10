@@ -5,4 +5,4 @@
 #include "tokenizer.hpp"
 #include "telem_builder.hpp"
 
-#endif // __BUILDER_H__
+#endif  // __BUILDER_H__

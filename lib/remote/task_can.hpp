@@ -12,10 +12,8 @@ class CANTask : public tasks::TaskAction {
     bool initialize() {
         pinMode(HWPin::CAN_DATA_MCP_CS, OUTPUT);
         digitalWrite(HWPin::CAN_DATA_MCP_CS, HIGH);
-
-        Resources::drive().initialize();
-        // Resources::data().initialize();
-
+        // no need to initialize can bus! already initialized in main
+        // Resources::drive().initialize();
         return true;
     }
 

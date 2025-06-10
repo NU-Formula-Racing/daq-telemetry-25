@@ -12,29 +12,39 @@ BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
 }
 
 BitBuffer::~BitBuffer() {
-    delete _buffer;
+    delete[] _buffer;
 }
 
 void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
     // write to the buffer at the specified offset
     // check that we can actually write the full size of the data
-    // UTIL_DEBUG_PRINTLN("BitBuffer::write from %d to %d bits, length %d", handle.offset, handle.offset + handle.size, bitSize());
+    // UTIL_DEBUG_PRINTLN("BitBuffer::write from %d to %d bits, length %d", handle.offset,
+    // handle.offset + handle.size, bitSize());
 
     if (handle.offset + handle.size > _bitSize) {
         UTIL_DEBUG_PRINT_ERROR("Cannot write to buffer, not enough space.");
         return;
     }
 
-    size_t byteOffset = handle.offset >> 3;
+    size_t endByte = (handle.offset + handle.size + 7) >> 3;
+    if (endByte > (_bitSize + 7) >> 3) {
+        UTIL_DEBUG_PRINT_ERROR("BitBuffer write out-of-bounds!");
+        return;
+    }
+
+    size_t byteOffset = handle.offset / 8;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
 
     const uint8_t* src = reinterpret_cast<const uint8_t*>(data);
-    uint8_t* dst = reinterpret_cast<uint8_t*>(_buffer) + byteOffset;
+    uint8_t* dst = &_buffer[byteOffset];
+
+    UTIL_DEBUG_PRINT("Writing to %p from %p, byte offset %d, bit size %d\n", dst, src, byteOffset,
+                     handle.size);
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations
-    if (!bitOffset) {
-        size_t numWholeBytes = handle.size >> 3;
+    if (bitOffset == 0) {
+        size_t numWholeBytes = handle.size / 8;
         size_t remainingBits = handle.size % 8;
         memcpy(dst, src, numWholeBytes);
         bitIndex = numWholeBytes * 8;

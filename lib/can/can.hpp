@@ -73,13 +73,13 @@ class CANDriver {
     virtual void install(CANBaudRate baudRate) = 0;
     virtual void uninstall() = 0;
     virtual void sendMessage(const RawCANMessage& message) = 0;
+    virtual bool receiveMessage(RawCANMessage* res) = 0;
 
     // message handling for interrupt-based drivers
     virtual void attachInterrupt(std::function<void(const CANMessage&)> callback) {
         // Default implementation does nothing.
     }
 
-    virtual bool receiveMessage(RawCANMessage* res) = 0;
 
     virtual void clearTransmitQueue() {}
     virtual void clearReceiveQueue() {}
@@ -147,14 +147,12 @@ class CANBus {
     /// @return A const reference to all the CANMessages
     const std::unordered_map<uint32_t, std::unique_ptr<CANMessage>>& getMessages() const;
 
-    const uint8_t *dataBuffer(std::size_t *size) const {
+    const uint8_t* dataBuffer(std::size_t* size) const {
         *size = _buffer.byteSize();
         return _buffer.buffer();
     }
 
-    std::mutex &bufMutex() {
-        return _bufferMutex;
-    }
+    std::mutex& bufMutex() { return _bufferMutex; }
 
    private:
     // HAL

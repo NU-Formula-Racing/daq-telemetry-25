@@ -15,9 +15,7 @@ class LogTask : public tasks::TaskAction {
         return true;
     }
 
-    void run() {
-        Resources::instance().logger.log(Resources::drive());
-    }
+    void run() { Resources::instance().logger.log(Resources::drive()); }
 
     void end() {}
 

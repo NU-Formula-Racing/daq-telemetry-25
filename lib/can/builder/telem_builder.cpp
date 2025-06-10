@@ -142,7 +142,7 @@ Result<bool> TelemBuilder::_parseBoard(CANBus& bus) {
     if (!nm.isSome() || nm.value().type != TokenType::TT_IDENTIFIER) {
         return Result<bool>::errorResult("expected board name after '>'");
     }
-    const char *boardName = IdentifierPool::instance().get(nm.value().data.idHandle);
+    const char* boardName = IdentifierPool::instance().get(nm.value().data.idHandle);
     TELEM_DEBUG_PRINTLN("Parsing board %s...", boardName);
 
     // now move until the next line
@@ -194,7 +194,7 @@ Result<CANMessageDescription> TelemBuilder::_parseMessage() {
         return Result<CANMessageDescription>::errorResult("expected message name");
     }
 
-    const char *messageName = IdentifierPool::instance().get(n.value().data.idHandle);
+    const char* messageName = IdentifierPool::instance().get(n.value().data.idHandle);
     TELEM_DEBUG_PRINTLN("Parsing message %s...", messageName);
 
     // header fields via LUT

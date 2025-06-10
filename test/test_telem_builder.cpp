@@ -4,14 +4,16 @@
 #include <can.hpp>
 #include <cmath>
 #include <cstring>
-#include "test_debug.hpp"
+
 #include "test.hpp"
+#include "test_debug.hpp"
 
 using can::CANBaudRate;
 using can::CANBus;
 using can::CANDriver;
 using can::CANMessage;
 using can::CANSignal;
+using can::RawCANMessage;
 using can::MockTokenReader;
 using can::TelemBuilder;
 using can::TelemetryOptions;
@@ -19,7 +21,12 @@ using can::Tokenizer;
 using common::Result;
 
 // A no-op driver for testing
-class TestDriver : public CANDriver {};
+class TestDriver : public CANDriver {
+    virtual void install(CANBaudRate baudRate) {}
+    virtual void uninstall() {}
+    virtual void sendMessage(const RawCANMessage& message) {}
+    virtual bool receiveMessage(RawCANMessage* res) { return false; }
+};
 
 // Helper: build bus and options from config
 static bool buildBus(const char* cfg, TelemetryOptions& outOpts, CANBus& bus) {

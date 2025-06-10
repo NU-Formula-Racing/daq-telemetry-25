@@ -1,7 +1,6 @@
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
 
-
 // different pins for applciations
 #if defined(APP_REMOTE)
 

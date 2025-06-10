@@ -231,8 +231,6 @@ void test_Tokenizer_WhitespaceAndComments() {
     tok.end();
 }
 
-
-
 TEST_FUNC(test_Tokenizer_GlobalOption);
 TEST_FUNC(test_Tokenizer_BoardLine);
 TEST_FUNC(test_Tokenizer_MessageLine);
