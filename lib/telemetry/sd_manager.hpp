@@ -1,6 +1,8 @@
 #ifndef __SD_MANAGER_H__
 #define __SD_MANAGER_H__
 
+#ifndef __PLATFORM_NATIVE
+
 #include <SD.h>
 
 #include <array>
@@ -63,5 +65,7 @@ class FileGuard {
 };
 
 }  // namespace remote
+
+#endif
 
 #endif  // __SD_MANAGER_H__

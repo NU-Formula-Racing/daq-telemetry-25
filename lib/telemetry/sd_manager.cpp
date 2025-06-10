@@ -1,3 +1,5 @@
+#ifndef __PLATFORM_NATIVE
+
 #include "sd_manager.hpp"
 
 #include "FS.h"
@@ -170,3 +172,5 @@ uint16_t SDManager::numFilesInDir(const char* dir) {
 }
 
 }  // namespace remote
+
+#endif

@@ -1,13 +1,16 @@
 #ifndef __SD_TOKEN_READER_H__
 #define __SD_TOKEN_READER_H__
 
+#ifndef __PLATFORM_NATIVE
+
 #include <builder/token_reader.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <sd_manager.hpp>
 
 namespace remote {
+
+class FileGuard;
 
 /// @brief SD-backed reader; slurps file on start()
 class SDTokenReader : public can::TokenReader {
@@ -24,6 +27,8 @@ class SDTokenReader : public can::TokenReader {
     FileGuard& _guard;
 };
 
+
 }  // namespace remote
 
+#endif
 #endif  // __SD_TOKEN_READER_H__

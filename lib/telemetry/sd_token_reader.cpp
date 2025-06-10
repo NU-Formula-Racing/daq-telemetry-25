@@ -1,3 +1,5 @@
+#ifndef __PLATFORM_NATIVE
+
 #include "sd_token_reader.hpp"
 
 #include <SD.h>
@@ -100,3 +102,5 @@ bool SDTokenReader::eatUntil(const char character) {
 void SDTokenReader::end() {}
 
 }  // namespace remote
+
+#endif

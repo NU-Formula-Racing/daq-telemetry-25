@@ -12,7 +12,7 @@ BitBuffer::BitBuffer(size_t bitSize) : _bitSize(bitSize) {
 }
 
 BitBuffer::~BitBuffer() {
-    delete[] _buffer;
+    delete _buffer;
 }
 
 void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
@@ -26,12 +26,6 @@ void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
         return;
     }
 
-    size_t endByte = (handle.offset + handle.size + 7) >> 3;
-    if (endByte > (_bitSize + 7) >> 3) {
-        UTIL_DEBUG_PRINT_ERROR("BitBuffer write out-of-bounds!");
-        return;
-    }
-
     size_t byteOffset = handle.offset / 8;
     size_t bitOffset = handle.offset % 8;
     size_t bitIndex = 0;
@@ -39,7 +33,7 @@ void BitBuffer::write(BitBufferHandle handle, const void* data, size_t size) {
     const uint8_t* src = reinterpret_cast<const uint8_t*>(data);
     uint8_t* dst = &_buffer[byteOffset];
 
-    UTIL_DEBUG_PRINT("Writing to %p from %p, byte offset %d, bit size %d\n", dst, src, byteOffset,
+    UTIL_DEBUG_PRINT("Writing byte offset %d, bit offset %d, bit size %d\n", byteOffset, handle.offset,
                      handle.size);
 
     // if bitOffset is 0, we can do a large memcpy first, instead of bitwise-operations

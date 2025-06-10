@@ -19,7 +19,7 @@ CANMessage& CANBus::addMessage(const CANMessageDescription& desc) {
     }
 
     BitBufferHandle messageHandle(desc.length * 8, _nextBitOffset);
-    _nextBitOffset += desc.length * 8;
+    _nextBitOffset += 64;
 
     // construct on the heap using the ctor without trailing-_ names
     std::unique_ptr<CANMessage> msgPtr =
