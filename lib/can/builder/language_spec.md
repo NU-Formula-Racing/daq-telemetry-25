@@ -5,7 +5,6 @@
 >  BoardName [free-text …]              # Board line
 >> MessageName messageID messageSize    # Message line
 >>> SignalName dataType startBit length factor offset [signedness] [endianness]
->>>> EnumName rawValue                  # Enum entry (only if dataType = enum)
 ```
 
 ---
@@ -39,7 +38,7 @@ _Every `>>>` line **must** be nested under a `>>`, and every `>>` under a `>` (s
 - Whitespace (spaces / tabs) separates fields.
 - `#` starts a comment; the rest of the line is ignored.
 - Blank lines may appear anywhere.
-- Identifiers (`BoardName`, `MessageName`, `SignalName`, enum names) follow the regex
+- Identifiers (`BoardName`, `MessageName`, `SignalName`) follow the regex
   `[A-Za-z_][A-Za-z0-9_]*` and are case-sensitive.
 - Integers may be decimal (`123`) or hexadecimal (`0x7A`); **message IDs must be hex**.
 - Floating literals use C syntax (`3.14`, `-1.2e-3`).
@@ -98,7 +97,7 @@ _No extended-ID flag and no period field; IDs are always standard 11-bit._
 | Field        | Type       | Details & Defaults                                                                                         |                                                 |
 | ------------ | ---------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `SignalName` | identifier | Unique within the Message.                                                                                 |                                                 |
-| `dataType`   | keyword    | • `int8/16/32/64` (signed by default) • `uint8/16/32/64` (unsigned) • `float` • `double` • `bool` • `enum` |                                                 |
+| `dataType`   | keyword    | • `int8/16/32/64` (signed by default) • `uint8/16/32/64` (unsigned) • `float` • `double` • `bool`          |                                                 |
 | `startBit`   | **int**    | 0 ≤ startBit < `messageSize × 8`.                                                                          |                                                 |
 | `length`     | **int**    | 1 – 64 bits ≤ payload size.                                                                                |                                                 |
 | `factor`     | float      | Scaling multiplier.                                                                                        |                                                 |
@@ -117,8 +116,7 @@ _No extended-ID flag and no period field; IDs are always standard 11-bit._
 3. **Bit overlap** – Signals within a message must not share bits.
 4. **Message ID range** – ID outside `0x000 – 0x7FF` → error.
 5. **Name clashes** – Duplicate Board, Message, or Signal names at the same scope.
-6. **Enum sanity** – Duplicate enum raw values → error / missing raw values → warning.
-7. **Field legality** –
+6. **Field legality** –
 
    - `signedness`, if present, is neither `signed` nor `unsigned`.
    - `endianness`, if present, is neither `little` nor `big`.
@@ -136,8 +134,6 @@ message     ::= ">>" ws name ws hex ws number nl
                 { blank | comment | signal }+
 signal      ::= ">>>" ws name ws type ws number ws number ws float ws float
                 [ ws signedness ] [ ws endianness ] nl
-                { enumEntry }
-enumEntry   ::= ">>>>" ws name ws number nl
 comment     ::= "#" { any } nl
 blank       ::= nl
 nl          ::= "\n" | "\r\n"
